@@ -111,6 +111,22 @@ const asField = (f: unknown) => {
   return { value: String(o.value ?? ""), confidence: asConf(o.confidence) };
 };
 
+// Load the timecard image as base64. Prefer fetching the static asset over the
+// deployment's own origin — this works on Vercel serverless (where public/ files
+// are NOT on the function's filesystem) and in local dev. Falls back to a disk
+// read if the self-fetch is unavailable.
+async function loadImageB64(req: Request, file: string): Promise<string> {
+  try {
+    const origin = new URL(req.url).origin;
+    const res = await fetch(`${origin}${file}`);
+    if (res.ok) return Buffer.from(await res.arrayBuffer()).toString("base64");
+  } catch {
+    /* fall through to disk read */
+  }
+  const abs = path.join(process.cwd(), "public", file.replace(/^\//, ""));
+  return (await readFile(abs)).toString("base64");
+}
+
 export async function POST(req: Request) {
   let ticketId = "";
   let file = "";
@@ -124,9 +140,7 @@ export async function POST(req: Request) {
 
   if (process.env.ANTHROPIC_API_KEY && file) {
     try {
-      // file is a public-relative path like /documents/timecards/wk1-3041.png
-      const abs = path.join(process.cwd(), "public", file.replace(/^\//, ""));
-      const b64 = (await readFile(abs)).toString("base64");
+      const b64 = await loadImageB64(req, file);
 
       const client = new Anthropic();
       const msg = await client.messages.create({

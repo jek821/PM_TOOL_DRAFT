@@ -21,7 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   LineChart as LineIcon,
   Sparkles,
-  TrendingDown,
+  TrendingUp,
   CalendarClock,
   DollarSign,
   AlertTriangle,
@@ -29,6 +29,12 @@ import {
   ArrowUpRight,
   FileText,
 } from "lucide-react";
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const fmtShort = (iso: string) => {
+  const [, m, d] = iso.split("-").map(Number);
+  return `${MONTHS[m - 1]} ${d}`;
+};
 
 export default function DashboardPage() {
   const { loaded, tickets, progress, baseline } = useStore();
@@ -76,6 +82,12 @@ export default function DashboardPage() {
   const pendingCount = tickets.filter(
     (t) => t.status === "unscanned" || t.status === "needsReview"
   ).length;
+  const actualPct = Math.round(context.overallActualPct);
+  const plannedPct = Math.round(context.overallPlannedPct);
+  const behindPts = plannedPct - actualPct; // >0 = behind plan
+  const asOfShort = fmtShort(context.asOfDate);
+  const coDelta = context.revisedContract - context.originalContract;
+  const totalCodes = context.byCostCode.length;
 
   return (
     <div className="mx-auto max-w-6xl space-y-5 p-6">
@@ -100,10 +112,61 @@ export default function DashboardPage() {
       )}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Kpi icon={CalendarClock} label="Overall complete" value={`${context.overallActualPct.toFixed(0)}%`} sub={`vs ${context.overallPlannedPct.toFixed(0)}% planned`} tone="accent" />
-        <Kpi icon={DollarSign} label="Revised contract" value={usd(context.revisedContract)} sub={context.revisedContract !== context.originalContract ? "incl. change orders" : "no change orders"} tone="primary" />
-        <Kpi icon={AlertTriangle} label="Lines flagged" value={String(context.flagged.length)} sub={context.flagged.length === 0 ? "all on track" : "need attention"} tone={context.flagged.length ? "warning" : "success"} />
-        <Kpi icon={TrendingDown} label="Projected overrun" value={topOverrun > 0 ? usd(topOverrun) : "—"} sub={topOverrun > 0 ? "worst line, labor" : "none"} tone={topOverrun > 0 ? "danger" : "success"} />
+        <Kpi
+          icon={CalendarClock}
+          label="Overall complete"
+          value={`${actualPct}%`}
+          tone="accent"
+          sub={
+            <>
+              vs {plannedPct}% planned by {asOfShort}
+              {behindPts > 0 ? (
+                <span className="mt-0.5 block font-semibold text-danger">{behindPts} pts behind plan</span>
+              ) : behindPts < 0 ? (
+                <span className="mt-0.5 block font-semibold text-success">{-behindPts} pts ahead of plan</span>
+              ) : (
+                <span className="mt-0.5 block font-medium text-success">on plan</span>
+              )}
+            </>
+          }
+        />
+        <Kpi
+          icon={DollarSign}
+          label="Revised contract"
+          value={usd(context.revisedContract)}
+          tone="primary"
+          sub={
+            coDelta !== 0 ? (
+              <>
+                was {usd(context.originalContract)}
+                <span className="mt-0.5 block font-medium text-foreground/70">
+                  {coDelta > 0 ? "+" : "-"}
+                  {usd(Math.abs(coDelta))} in change orders
+                </span>
+              </>
+            ) : (
+              "no change orders yet"
+            )
+          }
+        />
+        <Kpi
+          icon={context.flagged.length ? AlertTriangle : CheckCircle2}
+          label="Cost codes flagged"
+          value={String(context.flagged.length)}
+          tone={context.flagged.length ? "warning" : "success"}
+          sub={
+            context.flagged.length
+              ? `of ${totalCodes} — over budget or behind schedule`
+              : `all ${totalCodes} on track`
+          }
+        />
+        <Kpi
+          icon={topOverrun > 0 ? TrendingUp : CheckCircle2}
+          label="Projected labor overrun"
+          value={topOverrun > 0 ? usd(topOverrun) : "—"}
+          tone={topOverrun > 0 ? "danger" : "success"}
+          sub={topOverrun > 0 ? "worst line, over its labor budget" : "no lines over labor budget"}
+        />
       </div>
 
       <div>
@@ -191,7 +254,7 @@ const toneChip: Record<Tone, string> = {
   danger: "bg-danger/10 text-danger",
 };
 
-function Kpi({ icon: Icon, label, value, sub, tone }: { icon: React.ElementType; label: string; value: string; sub: string; tone: Tone }) {
+function Kpi({ icon: Icon, label, value, sub, tone }: { icon: React.ElementType; label: string; value: string; sub: React.ReactNode; tone: Tone }) {
   return (
     <Card>
       <CardContent className="p-4">
@@ -200,7 +263,7 @@ function Kpi({ icon: Icon, label, value, sub, tone }: { icon: React.ElementType;
         </div>
         <div className="text-xs text-muted-foreground">{label}</div>
         <div className="text-xl font-bold">{value}</div>
-        <div className="text-[11px] text-muted-foreground">{sub}</div>
+        <div className="text-[11px] leading-snug text-muted-foreground">{sub}</div>
       </CardContent>
     </Card>
   );
@@ -209,6 +272,7 @@ function Kpi({ icon: Icon, label, value, sub, tone }: { icon: React.ElementType;
 const sevTone: Record<Insight["severity"], Tone> = { high: "danger", medium: "warning", low: "accent" };
 
 function InsightCard({ insight, metric }: { insight: Insight; metric?: CostCodeMetrics }) {
+  const [showRec, setShowRec] = useState(false);
   const chips: string[] = [];
   if (metric) {
     if (metric.productivity != null) chips.push(`Productivity ${metric.productivity.toFixed(2)}`);
@@ -243,10 +307,25 @@ function InsightCard({ insight, metric }: { insight: Insight; metric?: CostCodeM
               {chips.map((c) => <span key={c} className="rounded-md bg-muted px-2 py-1 text-xs font-medium tabular-nums">{c}</span>)}
             </div>
           )}
-          <div className="mt-3 flex items-start gap-2 rounded-md bg-accent/5 p-2.5 text-sm">
-            <ArrowUpRight className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-            <span className="text-foreground/80">{insight.recommendation}</span>
-          </div>
+          {insight.recommendation &&
+            (showRec ? (
+              <div className="mt-3 flex items-start gap-2 rounded-md bg-accent/5 p-2.5 text-sm">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <span className="text-foreground/80">
+                  <span className="mr-1 text-[11px] font-semibold uppercase tracking-wide text-accent">
+                    Suggested approach ·
+                  </span>
+                  {insight.recommendation}
+                </span>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowRec(true)}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/5 px-2.5 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/10"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Get AI recommendation
+              </button>
+            ))}
         </div>
 
         <div className="min-w-0">

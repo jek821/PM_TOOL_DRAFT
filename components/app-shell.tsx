@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Files, ScrollText, LineChart } from "lucide-react";
+import { Home, Files, ScrollText, LineChart, Info } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { project } from "@/lib/seed";
 import { useStore } from "@/lib/store";
@@ -16,6 +16,13 @@ const nav = [
 
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// Format an ISO date (YYYY-MM-DD) without timezone drift.
+function fmtDate(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${MONTHS[m - 1]} ${d}, ${y}`;
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -80,8 +87,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   {project.gc} · Job {project.jobNumber}
                 </div>
               </div>
-              <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                Week {project.asOfWeek} of {project.durationWeeks} · as of {project.asOfDate}
+              <div
+                className="flex items-center gap-2 text-right"
+                title={`This tool assumes the current date is ${fmtDate(project.asOfDate)}. All sample documents cover the project from its start (${fmtDate(project.startDate)}) through this date.`}
+              >
+                <Info className="h-4 w-4 shrink-0 text-muted-foreground/70" />
+                <div className="leading-tight">
+                  <div className="text-xs font-medium text-foreground/75">
+                    Assumed current date · {fmtDate(project.asOfDate)}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Sample docs cover {fmtDate(project.startDate)} – {fmtDate(project.asOfDate)} · Week{" "}
+                    {project.asOfWeek} of {project.durationWeeks}
+                  </div>
+                </div>
               </div>
             </>
           ) : (

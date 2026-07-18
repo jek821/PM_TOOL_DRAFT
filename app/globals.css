@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 20% 97%;
+  --foreground: 222 25% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 25% 15%;
+  --muted: 210 16% 93%;
+  --muted-foreground: 215 15% 45%;
+  --border: 214 20% 88%;
+  --primary: 222 47% 20%;          /* deep navy — matches the documents */
+  --primary-foreground: 0 0% 100%;
+  --accent: 199 89% 42%;
+  --danger: 0 72% 48%;
+  --warning: 35 92% 45%;
+  --success: 152 55% 38%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  font-size: 18px; /* base scale — makes the whole app read ~1 zoom step larger */
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+}
+
+/* thin, tidy scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+/* indeterminate progress bar (AI analysis loading state) */
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+.animate-progress-indeterminate {
+  animation: progress-indeterminate 1.1s ease-in-out infinite;
+}

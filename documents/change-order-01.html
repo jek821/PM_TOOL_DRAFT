@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Change Order CO-01</title>
+<style>
+  :root { --ink:#1a2230; --line:#9aa4b2; --line2:#c9d0da; --band:#2b3446; --shade:#eef1f5; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); margin: 0; background:#f3f4f6; }
+  .sheet { background:#fff; width: 900px; margin: 24px auto; padding: 40px 44px; box-shadow: 0 1px 6px rgba(0,0,0,.15); }
+  h1 { font-size: 22px; letter-spacing: .5px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align:center; font-size: 11px; color:#5b6473; margin-bottom: 22px; text-transform: uppercase; letter-spacing:1px; }
+  .idbar { display:grid; grid-template-columns: 1fr 1fr; border:1px solid var(--line2); margin-bottom:18px; font-size:12px; }
+  .idbar .cell { display:flex; border-bottom:1px solid var(--line2); }
+  .idbar .cell:nth-last-child(-n+2){ border-bottom:none; }
+  .idbar .k { background:var(--shade); font-weight:bold; padding:7px 8px; width:160px; border-right:1px solid var(--line2); }
+  .idbar .v { flex:1; padding:7px 8px; }
+  .blk { border:1px solid var(--line2); margin-bottom:18px; }
+  .blk > .hd { background:var(--band); color:#fff; font-weight:bold; font-size:11px; letter-spacing:.5px; padding:6px 8px; text-transform:uppercase; }
+  .blk .body { padding:8px; }
+  .field { display:flex; margin-bottom:8px; font-size:12px; }
+  .field:last-child { margin-bottom:0; }
+  .field .lbl { font-weight:bold; width:160px; flex:none; }
+  .field .txt { flex:1; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px; }
+  table.money { width:100%; border-collapse:collapse; font-size:11.5px; }
+  table.money caption { background:var(--band); color:#fff; font-weight:bold; font-size:11px; letter-spacing:.5px; padding:6px 8px; text-transform:uppercase; text-align:left; }
+  table.money td { border:1px solid var(--line2); padding:6px 8px; }
+  table.money td.amt { text-align:right; width:120px; }
+  table.money tr.sub td { background:#f4f6f9; font-style:italic; }
+  table.money tr.net td { font-weight:bold; }
+  table.money tr.tot td { font-weight:bold; background:#e9edf2; border-top:2px solid var(--ink); }
+  .sign { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:6px; }
+  .sign .col .role { font-weight:bold; font-size:11px; text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px; }
+  .sign .val { border-bottom:1px solid var(--line2); min-height:20px; padding:2px 2px; font-size:12px; }
+  .sign .cap { font-size:10px; color:#5b6473; margin-bottom:12px; }
+  .foot { font-size: 10px; color:#7a828f; margin-top: 12px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>CONSTRUCTION CHANGE ORDER</h1>
+  <div class="sub">Executed — Revises the Schedule of Values</div>
+
+  <div class="idbar">
+    <div class="cell"><div class="k">Change Order No.</div><div class="v">CO-01</div></div>
+    <div class="cell"><div class="k">Date Approved</div><div class="v">07-08-2026</div></div>
+    <div class="cell"><div class="k">Project Name</div><div class="v">633 Third Avenue — 17th Floor Office Fit-Out</div></div>
+    <div class="cell"><div class="k">Job #</div><div class="v">2412</div></div>
+    <div class="cell"><div class="k">Location of Work</div><div class="v">633 Third Avenue, 17th Floor, New York, NY</div></div>
+    <div class="cell"><div class="k">Cost Code / SOV Line</div><div class="v">08 11 00 — Doors, Frames &amp; Hardware</div></div>
+    <div class="cell"><div class="k">General Contractor</div><div class="v">Navillus Contracting</div></div>
+    <div class="cell"><div class="k">Owner / Client</div><div class="v">Northbridge Realty Group</div></div>
+  </div>
+
+  <div class="blk">
+    <div class="hd">Change Detail</div>
+    <div class="body">
+      <div class="field"><div class="lbl">Description of Change</div><div class="txt">Add one frameless glass entrance front at the reception and two interior glass office fronts along the north perimeter, including framing, glazing, and door hardware.</div></div>
+      <div class="field"><div class="lbl">Reason for Change</div><div class="txt">Owner-requested design upgrade to reception and perimeter offices.</div></div>
+    </div>
+  </div>
+
+  <div class="two">
+    <table class="money">
+      <caption>Change in Contract Price</caption>
+      <tbody>
+        <tr><td>Original Contract Price</td><td class="amt">$1,800,000</td></tr>
+        <tr><td>Net Change by Previous Change Orders</td><td class="amt">$0</td></tr>
+        <tr class="sub"><td>This Change — Labor</td><td class="amt">$6,000</td></tr>
+        <tr class="sub"><td>This Change — Material</td><td class="amt">$18,000</td></tr>
+        <tr class="sub"><td>This Change — Equipment</td><td class="amt">$0</td></tr>
+        <tr class="net"><td>Net Increase / (Decrease) — This CO</td><td class="amt">$24,000</td></tr>
+        <tr class="tot"><td>Revised Contract Price</td><td class="amt">$1,824,000</td></tr>
+      </tbody>
+    </table>
+
+    <table class="money">
+      <caption>Change in Contract Time</caption>
+      <tbody>
+        <tr><td>Original Contract Time (days)</td><td class="amt">56</td></tr>
+        <tr><td>Net Change by Previous COs (days)</td><td class="amt">0</td></tr>
+        <tr class="net"><td>Net Increase / (Decrease) — This CO (days)</td><td class="amt">3</td></tr>
+        <tr class="tot"><td>Revised Contract Time (days)</td><td class="amt">59</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sign">
+    <div class="col">
+      <div class="role">Accepted By — General Contractor</div>
+      <div class="val">&nbsp;</div><div class="cap">Signature</div>
+      <div class="val">Jacob Kriss, Project Manager — Navillus Contracting</div><div class="cap">Name &amp; Title</div>
+      <div class="val">07-08-2026</div><div class="cap">Date</div>
+    </div>
+    <div class="col">
+      <div class="role">Approved By — Owner</div>
+      <div class="val">&nbsp;</div><div class="cap">Signature</div>
+      <div class="val">David Feldman — Northbridge Realty Group</div><div class="cap">Name &amp; Title</div>
+      <div class="val">07-09-2026</div><div class="cap">Date</div>
+    </div>
+  </div>
+
+  <div class="foot">Change Order CO-01</div>
+</div>
+</body>
+</html>

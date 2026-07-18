@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Change Order — Template</title>
+<style>
+  :root { --ink:#1a2230; --line:#9aa4b2; --line2:#c9d0da; --band:#2b3446; --shade:#eef1f5; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); margin: 0; background:#f3f4f6; }
+  .sheet { background:#fff; width: 900px; margin: 24px auto; padding: 40px 44px; box-shadow: 0 1px 6px rgba(0,0,0,.15); }
+  h1 { font-size: 22px; letter-spacing: .5px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align:center; font-size: 11px; color:#5b6473; margin-bottom: 22px; text-transform: uppercase; letter-spacing:1px; }
+
+  .idbar { display:grid; grid-template-columns: 1fr 1fr; gap: 0; border:1px solid var(--line2); margin-bottom:18px; font-size:12px; }
+  .idbar .cell { display:flex; border-bottom:1px solid var(--line2); }
+  .idbar .cell:nth-last-child(-n+2){ border-bottom:none; }
+  .idbar .k { background:var(--shade); font-weight:bold; padding:7px 8px; width:150px; border-right:1px solid var(--line2); }
+  .idbar .v { flex:1; padding:7px 8px; min-height:16px; }
+
+  .blk { border:1px solid var(--line2); margin-bottom:18px; }
+  .blk > .hd { background:var(--band); color:#fff; font-weight:bold; font-size:11px; letter-spacing:.5px; padding:6px 8px; text-transform:uppercase; }
+  .blk .body { padding:8px; }
+  .field { display:flex; margin-bottom:6px; font-size:12px; }
+  .field:last-child { margin-bottom:0; }
+  .field .lbl { font-weight:bold; width:150px; flex:none; }
+  .field .box { flex:1; border-bottom:1px solid var(--line); min-height:40px; }
+
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px; }
+  table.money { width:100%; border-collapse:collapse; font-size:11.5px; }
+  table.money caption { background:var(--band); color:#fff; font-weight:bold; font-size:11px; letter-spacing:.5px; padding:6px 8px; text-transform:uppercase; text-align:left; }
+  table.money td { border:1px solid var(--line2); padding:6px 8px; }
+  table.money td.amt { text-align:right; width:120px; }
+  table.money tr.sub td { background:#f4f6f9; font-style:italic; }
+  table.money tr.net td { font-weight:bold; }
+  table.money tr.tot td { font-weight:bold; background:#e9edf2; border-top:2px solid var(--ink); }
+
+  .sign { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:6px; }
+  .sign .col .role { font-weight:bold; font-size:11px; text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px; }
+  .sign .line { border-bottom:1px solid var(--line); min-height:22px; margin-bottom:4px; }
+  .sign .cap { font-size:10px; color:#5b6473; margin-bottom:14px; }
+  .foot { font-size: 10px; color:#7a828f; margin-top: 12px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>CONSTRUCTION CHANGE ORDER</h1>
+  <div class="sub">Executed — Revises the Schedule of Values</div>
+
+  <div class="idbar">
+    <div class="cell"><div class="k">Change Order No.</div><div class="v"></div></div>
+    <div class="cell"><div class="k">Date Approved</div><div class="v"></div></div>
+    <div class="cell"><div class="k">Project Name</div><div class="v"></div></div>
+    <div class="cell"><div class="k">Job #</div><div class="v"></div></div>
+    <div class="cell"><div class="k">Location of Work</div><div class="v"></div></div>
+    <div class="cell"><div class="k">Cost Code / SOV Line</div><div class="v"></div></div>
+    <div class="cell"><div class="k">General Contractor</div><div class="v"></div></div>
+    <div class="cell"><div class="k">Owner / Client</div><div class="v"></div></div>
+  </div>
+
+  <div class="blk">
+    <div class="hd">Change Detail</div>
+    <div class="body">
+      <div class="field"><div class="lbl">Description of Change</div><div class="box"></div></div>
+      <div class="field"><div class="lbl">Reason for Change</div><div class="box"></div></div>
+    </div>
+  </div>
+
+  <div class="two">
+    <table class="money">
+      <caption>Change in Contract Price</caption>
+      <tbody>
+        <tr><td>Original Contract Price</td><td class="amt"></td></tr>
+        <tr><td>Net Change by Previous Change Orders</td><td class="amt"></td></tr>
+        <tr class="sub"><td>This Change — Labor</td><td class="amt"></td></tr>
+        <tr class="sub"><td>This Change — Material</td><td class="amt"></td></tr>
+        <tr class="sub"><td>This Change — Equipment</td><td class="amt"></td></tr>
+        <tr class="net"><td>Net Increase / (Decrease) — This CO</td><td class="amt"></td></tr>
+        <tr class="tot"><td>Revised Contract Price</td><td class="amt"></td></tr>
+      </tbody>
+    </table>
+
+    <table class="money">
+      <caption>Change in Contract Time</caption>
+      <tbody>
+        <tr><td>Original Contract Time (days)</td><td class="amt"></td></tr>
+        <tr><td>Net Change by Previous COs (days)</td><td class="amt"></td></tr>
+        <tr class="net"><td>Net Increase / (Decrease) — This CO (days)</td><td class="amt"></td></tr>
+        <tr class="tot"><td>Revised Contract Time (days)</td><td class="amt"></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sign">
+    <div class="col">
+      <div class="role">Accepted By — General Contractor</div>
+      <div class="line"></div><div class="cap">Signature</div>
+      <div class="line"></div><div class="cap">Name &amp; Title</div>
+      <div class="line"></div><div class="cap">Date</div>
+    </div>
+    <div class="col">
+      <div class="role">Approved By — Owner</div>
+      <div class="line"></div><div class="cap">Signature</div>
+      <div class="line"></div><div class="cap">Name &amp; Title</div>
+      <div class="line"></div><div class="cap">Date</div>
+    </div>
+  </div>
+
+  <div class="foot">Change Order — blank template</div>
+</div>
+</body>
+</html>

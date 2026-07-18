@@ -1,0 +1,51 @@
+1. Do research on what a PM does at a General Contracting Construction Company like Navillus
+
+2. Create a list of documents that are relevant to a PM's oversite of a project
+
+3. Accumulate quality examples of each document
+
+4. Use AI to improve any sample templates since public resources are sparse
+
+5. Work with AI to create a demo project which we will use to inform the fake data we generate for the documents
+
+6. Fill all documents with generated data
+
+7. Build frontend interface for demo, pseudo user upload with test data docs. 
+
+8. Real claude parsing of data, verification on flagged data (especially physical time cards)
+
+9. Time card data can be exported as CSV
+
+10. Build dashboard that displays metrics and insights found by claude analysis on project timeline and context constructed using the input data.
+
+------------------------------------------------------------
+KEY REFINEMENTS & CORRECTED ASSUMPTIONS (as of planning)
+------------------------------------------------------------
+
+Deprecated assumptions (initially thought, now corrected):
+- [X] Put budgeted labor HOURS on the SOV -> SOV is DOLLARS ONLY. Labor hours live in a
+      separate Job Cost Budget (internal cost doc). SOV = owner-facing revenue; Budget = internal cost.
+- [X] Old 3-digit CSI cost codes (09-250) -> modern 6-digit CSI MasterFormat (09 29 00).
+- [X] Progress entered as a live slider -> progress comes from dated Weekly Progress Reports
+      (needed for the over-time trend).
+- [X] Single-day timecards -> Weekly Labor Tickets (one card = one crew-week; keeps volume
+      low, reconciles to totals).
+- [X] "OCR" -> "vision extraction" (Claude reads WITH CONTEXT, so it can catch a wrong-project
+      card or improbable data - not just characters).
+
+Key insights to carry into the README:
+- Two baselines, not one: SOV (billing $) + Job Cost Budget (planned hours).
+  A change order REVISES the SOV; it is NOT itself an updated SOV.
+- Architecture: static baselines + dated events (timecards, progress, change orders) ->
+  the system COMPUTES the current state. The pay-application view is a computed output,
+  never re-uploaded.
+- Deterministic math vs AI narrative: all metrics (earned value, productivity = earned hrs /
+  actual hrs, schedule slippage) are pure math. The LLM never does arithmetic - it only writes
+  the plain-English summary on top.
+- Honest scope: labor is the only actionable signal we can prove (real labor actuals).
+  Material/subcontractor cost variance = roadmap (no invoice data).
+- All test data is synthetic and disclosed as such (real construction docs are confidential /
+  not public).
+
+Final document set: SOV, Job Cost Budget, Weekly Progress Report, Change Order (all parsed PDFs),
+Weekly Labor Tickets (parsed images). Output: payroll CSV.

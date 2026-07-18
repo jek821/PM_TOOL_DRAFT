@@ -1,0 +1,38 @@
+Demo Flow:
+
+User Login
+||
+\/
+Create New Project
+||
+\/
+Upload SOV
+||
+\/
+Upload other docs
+- Weekly Progress logs - updates on percentage of physical completion 
+- Change Orders (revisions to the SOV — specific affected line TBD once the project is planned)
+||
+\/
+Upload Labor Tickets
+- Generated images of physical time cards for labor
+- Each card is a weekly log, with handwritten data
+	- Claude will parse the image using vision extraction (context-aware, not just OCR) to deconstruct
+	- Claude will flag data with questionable accuracy
+		- Flagged data will be highlighted for PM to intervene (update or approve)
+		- We will have one data entry with maybe an extra 0 to show how it can catch improbable data
+		- We should also have an example where the timecard is for a different project and the AI should flag this
+		- Another example image will be a low quality scan, that the OCR has issues with but the user can manually enter the data from by reading
+||
+\/
+All data entered (docs and labor tickets) will now be processed into a timeline that we can use for analysis of project trajectory:
+- PM Can export Labor data in csv format for uploading to payroll
+- PM Can view dashboard with metrics on completion in different areas 
+- Dashboard will also have a summary section where we will use claude to analyze
+the project timeline assembled using the data, giving insights into areas where things are on track and some areas where the PM might want to pay special attention or try and reach out to gather more information. 
+||
+\/
+It May also be good if the dashboard insights/statistics can be exported in some CSV or pdf format for sharing with others. (not sure about this)
+||
+\/
+(In the demo presentation I want to highlight a few things, the lack of real data meant I had to make assumptions and rely on publicly available data which is very sparse (outside of generic templates). In a real system I would fit the data parsing logic to the standard data formats for the company. Also having more data, would allow for more in depth analysis. And knowing how the payroll system works would also allow me to optimize the output format of the digested payroll data to fit that system. Also with more time I would like to integrate a chat bot feature where PM's can ask more targeted questions and the data they have put in for that project would be queried to answer specific facts about it without the PM having to go searching through all of those docs manually. 

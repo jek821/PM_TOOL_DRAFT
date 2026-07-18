@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Job Cost Budget — 633 Third Avenue</title>
+<style>
+  :root { --ink:#1a2230; --line:#9aa4b2; --line2:#c9d0da; --band:#2b3446; --shade:#eef1f5; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); margin: 0; background:#f3f4f6; }
+  .sheet { background:#fff; width: 1000px; margin: 24px auto; padding: 40px 44px; box-shadow: 0 1px 6px rgba(0,0,0,.15); }
+  h1 { font-size: 22px; letter-spacing: .5px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align:center; font-size: 11px; color:#5b6473; margin-bottom: 22px; text-transform: uppercase; letter-spacing:1px; }
+  .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 40px; font-size: 12px; margin-bottom: 22px; }
+  .meta .row { display:flex; gap: 8px; align-items: baseline; }
+  .meta .lbl { font-weight: bold; white-space: nowrap; }
+  .meta .val { flex:1; border-bottom: 1px solid var(--line2); }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  thead th { background: var(--band); color:#fff; font-weight: bold; padding: 7px 6px; border: 1px solid var(--band); text-align: center; vertical-align: middle; }
+  tbody td { border: 1px solid var(--line2); height: 24px; padding: 2px 6px; }
+  td.num, th.num { text-align: right; }
+  .colCode { width: 82px; } .colDesc { width: auto; }
+  .colHrs { width: 92px; } .colRate { width: 70px; } .colMoney { width: 104px; }
+  tr.total td { font-weight: bold; background:#e9edf2; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .note { font-size: 10px; color:#7a828f; margin-top: 10px; }
+  .foot { font-size: 10px; color:#7a828f; margin-top: 6px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>JOB COST BUDGET</h1>
+  <div class="sub">Cost-Loaded Budget by Cost Code</div>
+  <div class="meta">
+    <div class="row"><span class="lbl">Project:</span><span class="val">633 Third Avenue — 17th Floor Office Fit-Out</span></div>
+    <div class="row"><span class="lbl">General Contractor:</span><span class="val">Navillus Contracting</span></div>
+    <div class="row"><span class="lbl">Location:</span><span class="val">633 Third Avenue, 17th Floor, New York, NY</span></div>
+    <div class="row"><span class="lbl">Budget Date:</span><span class="val">06-26-2026</span></div>
+  </div>
+  <table>
+    <colgroup>
+      <col class="colCode"><col class="colDesc">
+      <col class="colHrs num"><col class="colRate num"><col class="colMoney num">
+      <col class="colMoney num"><col class="colMoney num">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Cost Code</th><th>Description</th><th>Planned<br>Labor Hrs</th>
+        <th>$ / Hr</th><th>Labor $</th><th>Material $</th><th>Total<br>Budget</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>01 50 00</td><td>General Conditions</td><td class="num">900</td><td class="num">85</td><td class="num">76,500</td><td class="num">110,000</td><td class="num">186,500</td></tr>
+      <tr><td>02 41 19</td><td>Selective Demolition</td><td class="num">780</td><td class="num">65</td><td class="num">50,700</td><td class="num">30,000</td><td class="num">80,700</td></tr>
+      <tr><td>09 29 00</td><td>Gypsum Board Assemblies (partitions)</td><td class="num">1,500</td><td class="num">80</td><td class="num">120,000</td><td class="num">125,000</td><td class="num">245,000</td></tr>
+      <tr><td>09 51 00</td><td>Acoustical Ceilings</td><td class="num">520</td><td class="num">80</td><td class="num">41,600</td><td class="num">55,000</td><td class="num">96,600</td></tr>
+      <tr><td>09 65 00</td><td>Resilient Flooring &amp; Carpet</td><td class="num">480</td><td class="num">70</td><td class="num">33,600</td><td class="num">98,000</td><td class="num">131,600</td></tr>
+      <tr><td>09 91 00</td><td>Painting</td><td class="num">720</td><td class="num">70</td><td class="num">50,400</td><td class="num">30,000</td><td class="num">80,400</td></tr>
+      <tr><td>08 11 00</td><td>Doors, Frames &amp; Hardware</td><td class="num">300</td><td class="num">80</td><td class="num">24,000</td><td class="num">73,000</td><td class="num">97,000</td></tr>
+      <tr><td>23 05 00</td><td>HVAC</td><td class="num">900</td><td class="num">95</td><td class="num">85,500</td><td class="num">200,000</td><td class="num">285,500</td></tr>
+      <tr><td>26 05 00</td><td>Electrical</td><td class="num">1,100</td><td class="num">95</td><td class="num">104,500</td><td class="num">165,000</td><td class="num">269,500</td></tr>
+      <tr><td>22 11 00</td><td>Plumbing</td><td class="num">320</td><td class="num">95</td><td class="num">30,400</td><td class="num">33,000</td><td class="num">63,400</td></tr>
+      <tr class="total"><td colspan="2">TOTAL</td><td class="num">7,520</td><td></td><td class="num">617,200</td><td class="num">919,000</td><td class="num">1,536,200</td></tr>
+    </tbody>
+  </table>
+  <div class="note">Internal cost budget (planned). Budget total $1,536,200 vs. contract $1,800,000 → ~14.7% gross margin (overhead + profit). Actuals &amp; variance are tracked by the system from timecards — not entered here.</div>
+  <div class="foot">Job Cost Budget — planned baseline.</div>
+</div>
+</body>
+</html>

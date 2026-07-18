@@ -1,0 +1,168 @@
+{
+  "_meta": {
+    "purpose": "SINGLE SOURCE OF TRUTH for all generated documents. Every doc (SOV, Job Cost Budget, Progress Reports, Change Order, Labor Tickets) is a VIEW of this file. Fill iteratively; verify metrics reconcile before rendering any document.",
+    "buildOrder": "1) baselines (DONE)  2) insight targets  3) weekly master table  4) typed event docs  5) timecards",
+    "status": {
+      "baselines_sov_budget": "APPROVED / RECORDED",
+      "insight_targets": "TBD — Step 2",
+      "weekly_progress_and_hours": "TBD — Step 3",
+      "change_orders": "TBD — Step 4",
+      "labor_tickets_and_roster": "TBD — Step 5"
+    },
+    "allDataSynthetic": true
+  },
+
+  "project": {
+    "id": "navillus-633third",
+    "name": "633 Third Avenue — 17th Floor Office Fit-Out",
+    "gc": "Navillus Contracting",
+    "owner": "Northbridge Realty Group (fictional)",
+    "location": "Midtown Manhattan, NY",
+    "address": "633 Third Avenue, 17th Floor, New York, NY 10017",
+    "jobNumber": "2412",
+    "projectManager": "Jacob Kriss",
+    "superintendent": "Tom Brennan",
+    "contractValue": 1800000,
+    "durationWeeks": 8,
+    "asOfWeek": 3,
+    "startDate": "2026-06-29",
+    "asOfDate": "2026-07-17"
+  },
+
+  "weekEndings": {
+    "1": "2026-07-03",
+    "2": "2026-07-10",
+    "3": "2026-07-17"
+  },
+
+  "costCodes": [
+    { "code": "01 50 00", "description": "General Conditions",             "sov": { "scheduledValue": 215000 }, "budget": { "plannedHours": 900,  "ratePerHour": 85, "laborCost": 76500,  "materialCost": 110000, "totalBudget": 186500 }, "role": "context" },
+    { "code": "02 41 19", "description": "Selective Demolition",           "sov": { "scheduledValue": 95000 },  "budget": { "plannedHours": 780,  "ratePerHour": 65, "laborCost": 50700,  "materialCost": 30000,  "totalBudget": 80700 },  "role": "context" },
+    { "code": "09 29 00", "description": "Gypsum Board Assemblies (partitions)", "sov": { "scheduledValue": 285000 }, "budget": { "plannedHours": 1500, "ratePerHour": 80, "laborCost": 120000, "materialCost": 125000, "totalBudget": 245000 }, "role": "PROBLEM — over budget (labor productivity decline); source of the 3 weekly timecards" },
+    { "code": "09 51 00", "description": "Acoustical Ceilings",            "sov": { "scheduledValue": 115000 }, "budget": { "plannedHours": 520,  "ratePerHour": 80, "laborCost": 41600,  "materialCost": 55000,  "totalBudget": 96600 },  "role": "context" },
+    { "code": "09 65 00", "description": "Resilient Flooring & Carpet",    "sov": { "scheduledValue": 155000 }, "budget": { "plannedHours": 480,  "ratePerHour": 70, "laborCost": 33600,  "materialCost": 98000,  "totalBudget": 131600 }, "role": "context" },
+    { "code": "09 91 00", "description": "Painting",                       "sov": { "scheduledValue": 95000 },  "budget": { "plannedHours": 720,  "ratePerHour": 70, "laborCost": 50400,  "materialCost": 30000,  "totalBudget": 80400 },  "role": "context" },
+    { "code": "08 11 00", "description": "Doors, Frames & Hardware",       "sov": { "scheduledValue": 115000 }, "budget": { "plannedHours": 300,  "ratePerHour": 80, "laborCost": 24000,  "materialCost": 73000,  "totalBudget": 97000 },  "role": "context" },
+    { "code": "23 05 00", "description": "HVAC",                           "sov": { "scheduledValue": 335000 }, "budget": { "plannedHours": 900,  "ratePerHour": 95, "laborCost": 85500,  "materialCost": 200000, "totalBudget": 285500 }, "role": "context" },
+    { "code": "26 05 00", "description": "Electrical",                     "sov": { "scheduledValue": 315000 }, "budget": { "plannedHours": 1100, "ratePerHour": 95, "laborCost": 104500, "materialCost": 165000, "totalBudget": 269500 }, "role": "BEHIND SCHEDULE — from progress %, no timecards" },
+    { "code": "22 11 00", "description": "Plumbing",                       "sov": { "scheduledValue": 75000 },  "budget": { "plannedHours": 320,  "ratePerHour": 95, "laborCost": 30400,  "materialCost": 33000,  "totalBudget": 63400 },  "role": "context" }
+  ],
+
+  "totals": {
+    "sovContractValue": 1800000,
+    "budgetTotal": 1536200,
+    "budgetLaborCost": 617200,
+    "budgetMaterialCost": 919000,
+    "plannedHoursTotal": 7520,
+    "grossMargin": 263800,
+    "grossMarginPct": 0.1466
+  },
+
+  "insightTargets": {
+    "gypsumCost": {
+      "costCode": "09 29 00",
+      "story": "Holding schedule only by burning overtime; the labor budget will blow out.",
+      "weekly": [
+        { "week": 1, "hours": 160, "cumProgressPct": 11, "weeklyProductivity": 1.03 },
+        { "week": 2, "hours": 180, "cumProgressPct": 20, "weeklyProductivity": 0.75 },
+        { "week": 3, "hours": 200, "cumProgressPct": 27, "weeklyProductivity": 0.53 }
+      ],
+      "cumulative": { "actualHours": 540, "progressPct": 27, "earnedHours": 405, "productivity": 0.75, "actualLaborCost": 43520 },
+      "projection": { "eacHours": 2000, "budgetHours": 1500, "hoursOver": 500, "eacLaborCost": 161200, "budgetLaborCost": 120000, "laborOverUSD": 41200, "overPct": 0.34 }
+    },
+    "electricalSchedule": {
+      "costCode": "26 05 00",
+      "story": "~1.5 weeks behind; gates drywall close-up, so it will compound the gypsum overrun.",
+      "weekly": [
+        { "week": 1, "plannedPct": 10, "actualPct": 8 },
+        { "week": 2, "plannedPct": 20, "actualPct": 12 },
+        { "week": 3, "plannedPct": 30, "actualPct": 15 }
+      ],
+      "weeksBehind": 1.5,
+      "dependency": "Electrical rough-in must complete before gypsum can close up walls."
+    },
+    "topLine": {
+      "overallActualPct": 22.8,
+      "overallPlannedPct": 26.9,
+      "reads": "Roughly on track at week 3 (finishes come later); both problems hidden under the average."
+    }
+  },
+
+  "progressByCostCode": {
+    "_note": "planned = baseline schedule curve; actual = weekly progress reports. Cumulative % complete by week [W1, W2, W3].",
+    "01 50 00": { "planned": [13, 25, 37], "actual": [12, 24, 35] },
+    "02 41 19": { "planned": [50, 80, 95], "actual": [45, 75, 90] },
+    "09 29 00": { "planned": [10, 19, 28], "actual": [11, 20, 27] },
+    "09 51 00": { "planned": [0, 3, 8],    "actual": [0, 2, 5] },
+    "09 65 00": { "planned": [0, 0, 0],    "actual": [0, 0, 0] },
+    "09 91 00": { "planned": [0, 0, 2],    "actual": [0, 0, 0] },
+    "08 11 00": { "planned": [0, 0, 0],    "actual": [0, 0, 0] },
+    "23 05 00": { "planned": [11, 22, 32], "actual": [10, 20, 30] },
+    "26 05 00": { "planned": [10, 20, 30], "actual": [8, 12, 15] },
+    "22 11 00": { "planned": [10, 19, 28], "actual": [8, 17, 25] }
+  },
+
+  "gypsumLaborByWeek": [
+    { "week": 1, "weekEnding": "2026-07-03", "totalHours": 160, "totalLabor": 12960, "rows": [
+      { "workerId": "w-torres", "name": "Miguel Torres", "class": "Carpenter Foreman", "hours": 44, "rate": 95, "extension": 4180 },
+      { "workerId": "w-okafor", "name": "James Okafor",  "class": "Carpenter",         "hours": 40, "rate": 85, "extension": 3400 },
+      { "workerId": "w-russo",  "name": "Danny Russo",   "class": "Carpenter",         "hours": 40, "rate": 85, "extension": 3400 },
+      { "workerId": "w-park",   "name": "Kevin Park",    "class": "Apprentice",        "hours": 36, "rate": 55, "extension": 1980 }
+    ] },
+    { "week": 2, "weekEnding": "2026-07-10", "totalHours": 180, "totalLabor": 14460, "rows": [
+      { "workerId": "w-torres", "name": "Miguel Torres", "class": "Carpenter Foreman", "hours": 48, "rate": 95, "extension": 4560 },
+      { "workerId": "w-okafor", "name": "James Okafor",  "class": "Carpenter",         "hours": 44, "rate": 85, "extension": 3740 },
+      { "workerId": "w-russo",  "name": "Danny Russo",   "class": "Carpenter",         "hours": 44, "rate": 85, "extension": 3740 },
+      { "workerId": "w-park",   "name": "Kevin Park",    "class": "Apprentice",        "hours": 44, "rate": 55, "extension": 2420 }
+    ] },
+    { "week": 3, "weekEnding": "2026-07-17", "totalHours": 200, "totalLabor": 16100, "rows": [
+      { "workerId": "w-torres", "name": "Miguel Torres", "class": "Carpenter Foreman", "hours": 54, "rate": 95, "extension": 5130 },
+      { "workerId": "w-okafor", "name": "James Okafor",  "class": "Carpenter",         "hours": 50, "rate": 85, "extension": 4250 },
+      { "workerId": "w-russo",  "name": "Danny Russo",   "class": "Carpenter",         "hours": 48, "rate": 85, "extension": 4080 },
+      { "workerId": "w-park",   "name": "Kevin Park",    "class": "Apprentice",        "hours": 48, "rate": 55, "extension": 2640 }
+    ] }
+  ],
+
+  "_reconciliation": {
+    "gypsumHoursSum": "160 + 180 + 200 = 540 (matches cumulative actualHours)",
+    "gypsumLaborSum": "12960 + 14460 + 16100 = 43520 (blended $80.6/hr ~ budget $80/hr)",
+    "weeklyProductivity": "earned(11/9/7% x1500) / actual = 1.03 / 0.75 / 0.53 -> declining",
+    "cumulativeProductivity": "405 earned / 540 actual = 0.75",
+    "projection": "EAC 540/0.27 = 2000 hrs vs 1500 budget = +500 hrs / ~$41k labor (+34%)",
+    "electrical": "actual 15% vs planned 30% at wk3 = ~1.5 weeks behind",
+    "topLine": "weighted actual 22.8% vs planned 26.9% -> reads on-track; problems hidden"
+  },
+  "changeOrders": [
+    {
+      "id": "CO-01",
+      "dateApproved": "2026-07-08",
+      "week": 2,
+      "costCode": "08 11 00",
+      "description": "Add frameless glass entrance front at reception and two interior glass office fronts (owner-requested upgrade).",
+      "reason": "Owner-requested design upgrade to reception and perimeter offices.",
+      "labor": 6000, "material": 18000, "equipment": 0,
+      "netIncrease": 24000,
+      "originalContract": 1800000, "revisedContract": 1824000,
+      "timeDaysOriginal": 56, "timeDaysAdded": 3, "timeDaysRevised": 59,
+      "acceptedBy": "Jacob Kriss, Project Manager — Navillus Contracting",
+      "approvedBy": "David Feldman — Northbridge Realty Group"
+    }
+  ],
+  "roster": [
+    { "id": "w-torres", "name": "Miguel Torres", "class": "Carpenter Foreman", "rate": 95, "costCode": "09 29 00" },
+    { "id": "w-okafor", "name": "James Okafor",  "class": "Carpenter",         "rate": 85, "costCode": "09 29 00" },
+    { "id": "w-russo",  "name": "Danny Russo",   "class": "Carpenter",         "rate": 85, "costCode": "09 29 00" },
+    { "id": "w-park",   "name": "Kevin Park",    "class": "Apprentice",        "rate": 55, "costCode": "09 29 00" }
+  ],
+  "_rosterNote": "Blended rate = $80/hr, matches the 09 29 00 budget $/hr. Crew charges the gypsum line across weeks 1-3.",
+  "laborTickets": {
+    "_status": "PROMPTS READY — see documents/timecard-gpt-prompts.md; images to be generated via GPT Image 2.",
+    "cards": [
+      { "no": "3041", "week": 1, "weekEnding": "2026-07-03", "project": "633 Third Ave", "job": "2412", "costCode": "09 29 00", "totalLabor": 12960, "trap": "lowQualityScan", "outcome": "low-confidence -> manual entry" },
+      { "no": "3068", "week": 2, "weekEnding": "2026-07-10", "project": "633 Third Ave", "job": "2412", "costCode": "09 29 00", "totalLaborTrue": 14460, "trap": "extraZero (Park 44 shown as 440)", "outcome": "flagged improbable -> corrected" },
+      { "no": "3095", "week": 3, "weekEnding": "2026-07-17", "project": "633 Third Ave", "job": "2412", "costCode": "09 29 00", "totalLabor": 16100, "trap": null, "outcome": "auto-approved" },
+      { "no": "1177", "week": null, "weekEnding": "2026-07-10", "project": "215 Water Street (DECOY)", "job": "2388", "costCode": "09 29 00", "totalLabor": 12410, "trap": "wrongProject", "outcome": "rejected — job/project mismatch" }
+    ],
+    "reconciledGypsumActuals": { "cards": "1-3", "hours": 540, "labor": 43520 }
+  }
+}

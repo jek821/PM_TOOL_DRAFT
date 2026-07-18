@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Schedule of Values — Template</title>
+<style>
+  :root { --ink:#1a2230; --line:#9aa4b2; --line2:#c9d0da; --band:#2b3446; --shade:#eef1f5; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); margin: 0; background:#f3f4f6; }
+  .sheet { background:#fff; width: 1100px; margin: 24px auto; padding: 40px 44px; box-shadow: 0 1px 6px rgba(0,0,0,.15); }
+  h1 { font-size: 22px; letter-spacing: .5px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align:center; font-size: 11px; color:#5b6473; margin-bottom: 22px; text-transform: uppercase; letter-spacing:1px; }
+
+  .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 40px; font-size: 12px; margin-bottom: 22px; }
+  .meta .row { display:flex; gap: 8px; align-items: baseline; }
+  .meta .lbl { font-weight: bold; white-space: nowrap; }
+  .meta .fill { flex:1; border-bottom: 1px solid var(--line); min-height: 16px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  thead th { background: var(--band); color:#fff; font-weight: bold; padding: 7px 6px; border: 1px solid var(--band); text-align: center; vertical-align: middle; }
+  tbody td { border: 1px solid var(--line2); height: 26px; padding: 2px 6px; }
+  col.num, td.num, th.num { text-align: right; }
+  .colItem { width: 46px; } .colCode { width: 78px; } .colDesc { width: auto; }
+  .colMoney { width: 108px; } .colPct { width: 62px; }
+
+  tr.section td { background: var(--shade); font-weight: bold; text-transform: uppercase; letter-spacing:.5px; font-size: 10.5px; }
+  tr.total td { font-weight: bold; background:#f7f9fb; border-top: 2px solid var(--ink); }
+  tr.grand td { font-weight: bold; background:#e9edf2; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .foot { font-size: 10px; color:#7a828f; margin-top: 12px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>SCHEDULE OF VALUES</h1>
+  <div class="sub">Continuation Sheet</div>
+
+  <div class="meta">
+    <div class="row"><span class="lbl">Project:</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Application No.:</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Contractor:</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Period Ending:</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Owner:</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Project No.:</span><span class="fill"></span></div>
+  </div>
+
+  <table>
+    <colgroup>
+      <col class="colItem"><col class="colCode"><col class="colDesc">
+      <col class="colMoney num"><col class="colMoney num"><col class="colPct num">
+      <col class="colMoney num"><col class="colMoney num">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Item<br>No.</th>
+        <th>Cost Code</th>
+        <th>Description of Work</th>
+        <th>Scheduled<br>Value</th>
+        <th>Work Completed<br>to Date</th>
+        <th>%<br>Comp.</th>
+        <th>Balance<br>to Finish</th>
+        <th>Retainage<br>(10%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="section"><td></td><td></td><td>Original Contract</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <!-- 12 blank line-item rows -->
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr class="total"><td colspan="3">Total Original Contract</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+
+      <tr class="section"><td></td><td></td><td>Change Orders</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <!-- 4 blank change-order rows -->
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr><td></td><td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+      <tr class="total"><td colspan="3">Total Change Orders</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+
+      <tr class="grand"><td colspan="3">Total Revised Contract</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td></tr>
+    </tbody>
+  </table>
+
+  <div class="foot">Schedule of Values — blank template</div>
+</div>
+</body>
+</html>

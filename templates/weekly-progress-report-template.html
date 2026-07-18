@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Weekly Progress Report — Template</title>
+<style>
+  :root { --ink:#1a2230; --line:#9aa4b2; --line2:#c9d0da; --band:#2b3446; --shade:#eef1f5; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: var(--ink); margin: 0; background:#f3f4f6; }
+  .sheet { background:#fff; width: 1000px; margin: 24px auto; padding: 40px 44px; box-shadow: 0 1px 6px rgba(0,0,0,.15); }
+  h1 { font-size: 22px; letter-spacing: .5px; text-align: center; margin: 0 0 4px; }
+  .sub { text-align:center; font-size: 11px; color:#5b6473; margin-bottom: 22px; text-transform: uppercase; letter-spacing:1px; }
+
+  .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 40px; font-size: 12px; margin-bottom: 22px; }
+  .meta .row { display:flex; gap: 8px; align-items: baseline; }
+  .meta .lbl { font-weight: bold; white-space: nowrap; }
+  .meta .fill { flex:1; border-bottom: 1px solid var(--line); min-height: 16px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  thead th { background: var(--band); color:#fff; font-weight: bold; padding: 7px 6px; border: 1px solid var(--band); text-align: center; vertical-align: middle; }
+  tbody td { border: 1px solid var(--line2); height: 28px; padding: 2px 6px; }
+  td.num, th.num { text-align: right; }
+  .colCode { width: 88px; } .colDesc { width: 34%; } .colPct { width: 74px; } .colNotes { width: auto; }
+
+  tr.total td { font-weight: bold; background:#e9edf2; border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
+  .note { font-size: 10px; color:#7a828f; margin-top: 10px; }
+  .foot { font-size: 10px; color:#7a828f; margin-top: 6px; text-align: right; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>WEEKLY PROGRESS REPORT</h1>
+  <div class="sub">Physical % Complete by Cost Code</div>
+
+  <div class="meta">
+    <div class="row"><span class="lbl">Project:</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Report No. / Week Ending:</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Prepared By:</span><span class="fill"></span></div>
+    <div class="row"><span class="lbl">Date:</span><span class="fill"></span></div>
+  </div>
+
+  <table>
+    <colgroup>
+      <col class="colCode"><col class="colDesc"><col class="colPct num"><col class="colNotes">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Cost Code</th>
+        <th>Description</th>
+        <th>%<br>Complete</th>
+        <th>Basis / Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 12 blank rows -->
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr><td></td><td></td><td class="num"></td><td></td></tr>
+      <tr class="total"><td colspan="2">Overall % Complete (weighted)</td><td class="num"></td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">Weekly internal progress estimate. % complete drives earned value; the Basis/Notes column records how each % was assessed (units installed, milestones, or field observation).</div>
+  <div class="foot">Weekly Progress Report — blank template</div>
+</div>
+</body>
+</html>

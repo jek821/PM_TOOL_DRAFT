@@ -1,0 +1,120 @@
+SOURCES — backing for document templates & test data
+=====================================================
+NOTE: All test data is synthetic. Real construction documents — populated SOVs, budgets,
+certified payroll, timecards — are confidential and not publicly available. These are
+STRUCTURE / FORMAT references we based original simplified documents on. Cited so every
+document type has a grounded basis.
+
+
+=====================================================
+SCHEDULE OF VALUES (SOV)
+=====================================================
+Definition:
+The SOV is the basis for contractors to request and receive payment for completed work
+(progress billing / payment applications). It assigns a value to each work item so contractors
+track payment entitlements and owners verify payment requests.
+A project baseline: a line-by-line breakdown of the contract value — every cost code with its
+slice of the total. Core columns: cost code + description; Scheduled Value (must sum to the
+contract); Work completed to date ($ and %); Balance to finish; Retainage (usually 10%).
+DOLLARS ONLY — labor is bundled into each line's value, NOT broken out and NOT in hours.
+Static baseline; revised only by change orders.
+
+Sources:
+- Smartsheet SOV template (PDF):
+  https://www.smartsheet.com/sites/default/files/2019-08/IC-Schedule-of-Values-SOV-Construction-10669_PDF.pdf
+- Procore — Schedule of Values Explained:
+  https://www.procore.com/library/schedule-of-values-explained
+- Pay-application sample (image, user-sourced): "ABC Electric" G702/G703-style pay app — used
+  for the Original Contract / Change Orders / Total Revised Contract structure.
+
+
+=====================================================
+JOB COST BUDGET (Cost-Loaded Budget)
+=====================================================
+Definition:
+Internal cost-side document (vs. the owner-facing SOV). Derived from the estimate. Carries
+PLANNED LABOR HOURS per cost code (plus labor $, material $) — the hours the SOV lacks. This is
+the honest source of planned hours (not the SOV, not a manual input, not hardcoded). Budget total
+is typically a bit less than the SOV total (the gap = overhead + profit).
+We use ONLY the planned side; actuals/variance are computed by our system from timecards.
+
+Sources:
+- ProjectManager — Construction Budget template (image, user-sourced): columns for
+  Planned/Actual Labor Hours, $/Hr, Materials, Budgeted vs Actual.  [ADD EXACT URL]
+- Cost codes follow CSI MasterFormat (modern 6-digit).
+
+
+=====================================================
+WEEKLY PROGRESS REPORT (physical % complete)
+=====================================================
+Definition:
+Internal weekly estimate of physical % complete per cost code (dynamic, dated). Drives earned
+value. A "Basis/Notes" field records HOW each % was assessed (units installed, milestones, or
+field observation). The formal % update is monthly via the pay application; weekly internal
+progress tracking is standard practice.
+
+Sources:
+- Mastt — Construction Progress Report Template:
+  https://www.mastt.com/resources/construction-progress-report-template
+  (Confirms a progress report includes a Schedule-of-Values line-item breakdown showing
+  "completion percentage per work category," plus a "Work Completed This Period" section with
+  activities/quantities — the basis for our % + Basis/Notes columns.)
+- Smartsheet — Construction templates (percent-complete + comments columns):
+  https://www.smartsheet.com/content/construction-estimate-templates
+- REJECTED: ProjectManager "Construction Daily Report" — considered but not used. It's a field
+  activity log (task status + crew hours + weather): lacks per-cost-code %, duplicates timecard
+  hours, adds unused noise.
+
+
+=====================================================
+WEEKLY LABOR TICKET (handwritten timecards)
+=====================================================
+Definition:
+Handwritten weekly field card recording labor by worker (Class, Worker, Hours, Rate/Hr,
+Extension), tied to a cost code + phase + job #. Source of ACTUAL labor hours. Materials/Equipment
+sections left blank (labor-only is realistic).
+
+Sources:
+- Real T&M "Extra Work Order" field ticket (image, user-sourced — C&O Painting): the messy
+  real-world sample our blank card layout is modeled on. Proof the extraction premise holds on
+  worst-case handwriting.
+- T&M / field-ticket standard fields (date, crew, hours by classification, cost code, phase,
+  signature):
+  - Rhumbix — Construction 101: Time & Materials Tags:
+    https://www.rhumbix.com/blog/construction-101-time-materials-tags
+  - Vergo — Process T&M Field Tickets:
+    https://www.getvergo.com/learn/process-field-tickets-for-time-and-material-work-in-construction-ap
+  - Clearstory — How to Process T&M Tags:
+    https://www.clearstory.build/construction-time-and-materials/how-to-process-tm-tags-in-minutes-not-weeks
+
+
+=====================================================
+CHANGE ORDER
+=====================================================
+Definition:
+A separate signed document authorizing a change to scope / price / time. It REVISES the SOV
+(Original + COs = Revised Contract) — a change order is NOT itself an updated SOV; it CAUSES one.
+Modeled as a dated event.
+
+Sources:
+- PENDING — template not yet built. Search: "AIA G701 Change Order sample";
+  "construction change order form filled example".
+
+
+=====================================================
+COST CODES & LABOR RATES (test-data basis)
+=====================================================
+- Cost codes: CSI MasterFormat, modern 6-digit divisions (e.g., 02 41 19 Selective Demolition,
+  06 10 00 Rough Carpentry, 09 29 00 Gypsum Board, 22 xx xx Plumbing, 23 xx xx HVAC,
+  26 xx xx Electrical).
+- Labor rates: based on NYC prevailing-wage / loaded rates for the trades (carpenters, laborers,
+  electricians, plumbers, HVAC). Representative and synthetic — to be refined when the project
+  is planned.
+
+
+=====================================================
+VISION EXTRACTION (not OCR)
+=====================================================
+Claude reads documents WITH CONTEXT (not just character recognition). That is what lets it flag a
+wrong-project ticket, catch improbable hours (e.g., an extra 0), and route low-confidence fields
+to human review. Frame it as "vision extraction," not "OCR," in the README and video.

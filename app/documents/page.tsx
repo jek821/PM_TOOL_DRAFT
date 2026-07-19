@@ -3,11 +3,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { documents as typedDocs } from "@/lib/documents";
-import { useStore, ticketChanges, type TicketChange } from "@/lib/store";
+import { useStore, ticketChanges, isReady, type HeaderData } from "@/lib/store";
 import { costCodes, project, weekEndings } from "@/lib/seed";
 import { usd } from "@/lib/format";
 import { cn } from "@/lib/cn";
-import { FileDown, FileText, Image as ImageIcon, FolderOpen, PencilLine } from "lucide-react";
+import {
+  FileDown,
+  FileText,
+  Image as ImageIcon,
+  FolderOpen,
+  PencilLine,
+  Sparkles,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+} from "lucide-react";
 import { ZoomableImage } from "@/components/ui/zoomable-image";
 
 interface Item {
@@ -17,7 +27,6 @@ interface Item {
   kind: "html" | "image";
   file: string;
   section: string;
-  changes?: TicketChange[];
 }
 
 const SECTIONS = [
@@ -50,13 +59,12 @@ export default function DocumentsPage() {
   }));
 
   const tcItems: Item[] = tickets.map((t) => {
-    const changes = ticketChanges(t);
     const statusLabel =
       t.status === "approved" ? "Approved" : t.status === "rejected" ? "Rejected" : "To review";
     return {
       id: t.id,
       title: `Timecard No. ${t.ticketNo}`,
-      subtitle: `${t.header.weekEnding} · ${statusLabel}${changes.length > 0 ? " · edited" : ""}`,
+      subtitle: `${t.header.weekEnding} · ${statusLabel}${ticketChanges(t).length > 0 ? " · edited" : ""}`,
       kind: "image" as const,
       file: t.file,
       section:
@@ -65,7 +73,6 @@ export default function DocumentsPage() {
           : t.status === "rejected"
           ? "Timecards · Rejected"
           : "Timecards · To Review",
-      changes,
     };
   });
 
@@ -138,6 +145,14 @@ export default function DocumentsPage() {
           </a>
         </div>
         <div className="flex-1 overflow-auto p-4">
+          <div className="mx-auto mb-4 flex max-w-4xl items-start gap-3 rounded-xl border border-accent/40 bg-accent/5 px-4 py-3 text-sm">
+            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
+            <p className="text-foreground/80">
+              <span className="font-semibold text-foreground">Try it — this demo is interactive.</span>{" "}
+              Edit any value in the Schedule of Values, Job Cost Budget, or a Progress Report, then open the Dashboard:
+              the AI analysis recomputes live and surfaces new insights for the data you enter. Everything resets on refresh.
+            </p>
+          </div>
           {selected.kind === "html" ? (
             selected.id.startsWith("pr") ? (
               <EditableProgressReport week={Number(selected.id.slice(2)) - 1} />
@@ -154,29 +169,7 @@ export default function DocumentsPage() {
               />
             )
           ) : (
-            <div className="mx-auto max-w-2xl space-y-3">
-              {selected.changes && selected.changes.length > 0 && (
-                <div className="rounded-md border border-accent/30 bg-accent/5 p-3">
-                  <div className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-accent">
-                    <PencilLine className="h-4 w-4" /> Edited during review
-                  </div>
-                  <ul className="space-y-1 text-xs text-muted-foreground">
-                    {selected.changes.map((c, i) => (
-                      <li key={i}>
-                        <span className="font-medium text-foreground">{c.label}:</span>{" "}
-                        <span className="text-danger line-through">{c.from}</span>{" "}
-                        &rarr; <span className="font-medium text-success">{c.to}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <ZoomableImage
-                src={selected.file}
-                alt={selected.title}
-                className="rounded-md border bg-white shadow-sm"
-              />
-            </div>
+            <TimecardEditor ticketId={selected.id} />
           )}
         </div>
       </div>
@@ -189,6 +182,172 @@ function MetaRow({ k, v }: { k: string; v: string }) {
     <div className="flex justify-between gap-3 border-b border-border/50 pb-1">
       <dt className="text-muted-foreground">{k}</dt>
       <dd className="text-right font-medium">{v}</dd>
+    </div>
+  );
+}
+
+const TC_HEADER_FIELDS: [keyof HeaderData, string][] = [
+  ["weekEnding", "Week Ending"],
+  ["job", "Job #"],
+  ["project", "Project"],
+  ["costCode", "Cost Code"],
+  ["phase", "Phase"],
+  ["contractor", "Contractor"],
+];
+
+const tcInput =
+  "h-9 w-full rounded-md border border-border px-2.5 text-sm outline-none focus:ring-2 focus:ring-accent/40";
+
+/** Timecard view for the Documents section. Text fields (worker names, class,
+ * and the header) are shown read-only — editing those adds matching/filtering
+ * complexity for no payoff. The numbers that actually feed the metrics engine
+ * (hours & rate) stay editable so you can correct a read and watch the Dashboard
+ * react. Also supports approve / reject and un-approve / un-reject. */
+function TimecardEditor({ ticketId }: { ticketId: string }) {
+  const { tickets, updateRow, approve, reject, undo } = useStore();
+  const t = tickets.find((x) => x.id === ticketId);
+  if (!t) return null;
+  const changes = ticketChanges(t);
+  const settled = t.status === "approved" || t.status === "rejected";
+  const status =
+    t.status === "approved"
+      ? { label: "Approved", cls: "bg-success/10 text-success" }
+      : t.status === "rejected"
+      ? { label: "Rejected", cls: "bg-danger/10 text-danger" }
+      : t.scanned
+      ? { label: "To review", cls: "bg-warning/10 text-warning" }
+      : { label: "Not scanned", cls: "bg-muted text-muted-foreground" };
+  const ready = isReady(t);
+
+  return (
+    <div className="mx-auto max-w-4xl space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-3.5 shadow-sm">
+        <div className="flex items-center gap-2.5 text-sm">
+          <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", status.cls)}>{status.label}</span>
+          <span className="text-muted-foreground">
+            No. {t.ticketNo} · Week ending {t.header.weekEnding}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {settled ? (
+            <button
+              onClick={() => undo(t.id)}
+              className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-muted"
+            >
+              <RotateCcw className="h-4 w-4" /> {t.status === "approved" ? "Un-approve" : "Un-reject"}
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => approve(t.id)}
+                disabled={!ready}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold",
+                  ready
+                    ? "bg-success text-white hover:bg-success/90"
+                    : "cursor-not-allowed bg-muted text-muted-foreground"
+                )}
+              >
+                <CheckCircle2 className="h-4 w-4" /> Approve
+              </button>
+              <button
+                onClick={() => reject(t.id)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-danger/40 px-3 py-2 text-sm font-medium text-danger hover:bg-danger/10"
+              >
+                <XCircle className="h-4 w-4" /> Reject
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="space-y-3">
+          <div className="rounded-xl border bg-card p-4 shadow-sm">
+            <div className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Ticket data
+            </div>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
+              {TC_HEADER_FIELDS.map(([key, label]) => (
+                <div key={key}>
+                  <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
+                  <dd className="mt-0.5 font-medium">{t.header[key] || "—"}</dd>
+                </div>
+              ))}
+              <div className="col-span-2">
+                <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Description</dt>
+                <dd className="mt-0.5 font-medium">{t.header.description || "—"}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+            <div className="border-b bg-muted/40 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Labor
+            </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-[11px] uppercase tracking-wide text-muted-foreground">
+                  <th className="px-3 py-2 text-left font-medium">Class</th>
+                  <th className="px-3 py-2 text-left font-medium">Worker</th>
+                  <th className="px-2 py-2 text-right font-medium">Hours</th>
+                  <th className="px-2 py-2 text-right font-medium">Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {t.rows.map((r, i) => (
+                  <tr key={i} className="border-b last:border-0">
+                    <td className="px-3 py-2">{r.className || "—"}</td>
+                    <td className="px-3 py-2">{r.worker || "—"}</td>
+                    <td className="px-1.5 py-1.5">
+                      <input
+                        type="number"
+                        value={r.hours}
+                        onChange={(e) => updateRow(t.id, i, "hours", e.target.value)}
+                        className={cn(tcInput, "w-20 text-right")}
+                      />
+                    </td>
+                    <td className="px-1.5 py-1.5">
+                      <input
+                        type="number"
+                        value={r.rate}
+                        onChange={(e) => updateRow(t.id, i, "rate", e.target.value)}
+                        className={cn(tcInput, "w-24 text-right")}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {changes.length > 0 && (
+            <div className="rounded-xl border border-accent/30 bg-accent/5 p-3">
+              <div className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-accent">
+                <PencilLine className="h-4 w-4" /> Edited vs. the AI&apos;s original read
+              </div>
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                {changes.map((c, i) => (
+                  <li key={i}>
+                    <span className="font-medium text-foreground">{c.label}:</span>{" "}
+                    <span className="text-danger line-through">{c.from}</span> &rarr;{" "}
+                    <span className="font-medium text-success">{c.to}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Original ticket</div>
+          <ZoomableImage
+            src={t.file}
+            alt={`Timecard ${t.ticketNo}`}
+            className="w-full rounded-xl border bg-white shadow-sm"
+          />
+        </div>
+      </div>
     </div>
   );
 }

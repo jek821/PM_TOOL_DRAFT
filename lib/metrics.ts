@@ -3,7 +3,7 @@
 // logic: every cost code runs the same computation and the same threshold rules.
 
 import { costCodes, progressByCostCode, changeOrders, project } from "./seed";
-import type { TicketState } from "./store";
+import type { TicketState } from "./tickets";
 import type { AnalysisResult } from "./analyze";
 
 export type Flag = "behind-schedule" | "low-productivity" | "budget-risk";
@@ -51,6 +51,11 @@ export interface ProjectContext {
   byCostCode: CostCodeMetrics[];
   flagged: string[]; // codes with >=1 flag, ranked by severityScore desc
   laborTicketsByCode: Record<string, string[]>; // approved timecard #s feeding each line
+  netLaborVariance: number; // projected labor $ over (>0) or under/saved (<0) budget
+  plannedMargin: number; // revised contract - total cost budget
+  projectedMargin: number; // planned margin absorbing the projected labor variance (materials held at budget)
+  durationWeeks: number;
+  projectedFinishWeek: number | null; // forecast finish at current schedule performance (SPI)
   analysis: AnalysisResult | null; // ← filled by the analyzeProject() seam
 }
 
@@ -201,6 +206,18 @@ export function computeProjectContext(
     .map((m) => m.code);
 
   const baselineTotal = codes.reduce((s, c) => s + c.scheduledValue, 0);
+  const revisedContract = baselineTotal + coTotal;
+
+  // Cost / margin: only labor has actuals (timecards); materials are held at budget.
+  const totalCostBudget = codes.reduce((s, c) => s + c.laborCost + c.materialCost, 0);
+  const netLaborVariance = byCostCode.reduce((s, m) => s + (m.projectedLaborOverrun ?? 0), 0);
+  const plannedMargin = revisedContract - totalCostBudget;
+  const projectedMargin = plannedMargin - netLaborVariance;
+
+  // Time: forecast finish from schedule performance (SPI = earned / planned).
+  const spi = overallPlannedPct > 0 ? overallActualPct / overallPlannedPct : 1;
+  const projectedFinishWeek =
+    overallActualPct > 0 && overallPlannedPct > 0 ? Math.round(project.durationWeeks / spi) : null;
 
   return {
     asOfWeek: project.asOfWeek,
@@ -208,10 +225,15 @@ export function computeProjectContext(
     overallActualPct,
     overallPlannedPct,
     originalContract: baselineTotal,
-    revisedContract: baselineTotal + coTotal,
+    revisedContract,
     byCostCode,
     flagged,
     laborTicketsByCode,
+    netLaborVariance,
+    plannedMargin,
+    projectedMargin,
+    durationWeeks: project.durationWeeks,
+    projectedFinishWeek,
     analysis: null,
   };
 }

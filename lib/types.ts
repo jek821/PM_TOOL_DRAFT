@@ -1,7 +1,9 @@
-// Domain + pipeline types. Mirrors data/master-data.json and the 3-stage
-// pipeline: (1) extract [AI]  ->  (2) assemble & compute [deterministic]  ->  (3) analyze [AI].
-
-// ---------- Static baselines ----------
+// Static baseline domain types, mirroring data/master-data.json.
+//
+// NOTE: the live pipeline types (Stage-1 extraction, Stage-2 metrics, Stage-3
+// analysis) are defined next to the code that owns them — extraction shapes in
+// `lib/mock-extractions.ts`, metrics in `lib/metrics.ts`, analysis in
+// `lib/analyze.ts`. This file is only the shared, static baseline vocabulary.
 
 export interface Project {
   id: string;
@@ -55,109 +57,8 @@ export interface ChangeOrder {
   revisedContract: number;
 }
 
-// ---------- Dynamic events ----------
-
 /** Cumulative % complete by week index [W1, W2, W3]. */
 export interface ProgressSeries {
   planned: number[];
   actual: number[];
-}
-
-export interface LaborRow {
-  workerId?: string;
-  name: string;
-  class: string;
-  hours: number;
-  rate: number;
-  extension: number;
-}
-
-export interface LaborTicket {
-  no: string;
-  weekEnding: string;
-  project: string;
-  job: string;
-  costCode: string;
-  phase: string;
-  description: string;
-  rows: LaborRow[];
-  totalLabor: number;
-}
-
-// ---------- Stage 1: extraction output (AI, per document) ----------
-
-export type Confidence = "high" | "low";
-
-export interface ExtractedField<T> {
-  value: T;
-  confidence: Confidence;
-}
-
-export type ValidationFlag =
-  | { kind: "improbable-hours"; row: number; message: string }
-  | { kind: "wrong-project"; message: string }
-  | { kind: "low-confidence"; field: string; message: string };
-
-export interface TicketExtraction {
-  ticket: LaborTicket;
-  flags: ValidationFlag[];
-  /** true when the ticket belongs to another project and should be rejected. */
-  rejected: boolean;
-  /** true when every field is high-confidence and no flags -> auto-approve. */
-  autoApprove: boolean;
-}
-
-// ---------- Stage 2: computed metrics (deterministic) ----------
-
-export interface CostCodeMetrics {
-  code: string;
-  description: string;
-  scheduledValue: number;
-  plannedHours: number;
-  actualHours: number;
-  percentComplete: number; // actual
-  plannedPercent: number;
-  earnedValue: number; // % x scheduledValue
-  earnedHours: number; // % x plannedHours
-  actualLaborCost: number;
-  productivity: number | null; // earnedHours / actualHours
-  scheduleVariancePct: number; // actual - planned
-  eacHours: number | null;
-  laborBudget: number;
-  projectedLaborOver: number | null;
-}
-
-export interface WeeklyPoint {
-  week: number;
-  actualHours: number;
-  productivity: number | null;
-  percentComplete: number;
-}
-
-export interface ProjectContext {
-  project: Project;
-  asOfWeek: number;
-  overallActualPct: number;
-  overallPlannedPct: number;
-  revisedContract: number;
-  byCostCode: CostCodeMetrics[];
-  gypsumWeekly: WeeklyPoint[]; // the tracked-trade trend
-}
-
-// ---------- Stage 3: analysis output (AI, over computed context) ----------
-
-export type Severity = "high" | "medium" | "info";
-
-export interface Insight {
-  costCode: string;
-  title: string;
-  severity: Severity;
-  finding: string;
-  evidence: string;
-  recommendation: string;
-}
-
-export interface AnalysisResult {
-  headline: string;
-  insights: Insight[];
 }

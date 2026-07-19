@@ -12,7 +12,8 @@ import { NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import path from "path";
 import { roster } from "@/lib/seed";
-import { sampleExtraction, type ExtractionResult, type Conf } from "@/lib/mock-extractions";
+import { reviewTickets, sampleExtraction, type ExtractionResult, type Conf } from "@/lib/mock-extractions";
+import { recordUsage } from "@/lib/usage";
 
 export const runtime = "nodejs";
 
@@ -129,18 +130,20 @@ async function loadImageB64(req: Request, file: string): Promise<string> {
 
 export async function POST(req: Request) {
   let ticketId = "";
-  let file = "";
   try {
-    const body = await req.json();
-    ticketId = String(body.ticketId ?? "");
-    file = String(body.file ?? "");
+    ticketId = String((await req.json()).ticketId ?? "");
   } catch {
     return NextResponse.json({ error: "bad request" }, { status: 400 });
   }
 
-  if (process.env.ANTHROPIC_API_KEY && file) {
+  // Resolve the image path from the ticket id against a known whitelist — never
+  // from a client-supplied path (prevents path traversal on the disk read and
+  // host re-targeting / SSRF on the origin fetch).
+  const ticket = reviewTickets.find((t) => t.id === ticketId);
+
+  if (process.env.ANTHROPIC_API_KEY && ticket) {
     try {
-      const b64 = await loadImageB64(req, file);
+      const b64 = await loadImageB64(req, ticket.file);
 
       const client = new Anthropic();
       const msg = await client.messages.create({
@@ -158,6 +161,15 @@ export async function POST(req: Request) {
             ],
           },
         ],
+      });
+      recordUsage({
+        ts: Date.now(),
+        route: "extract",
+        model: MODEL,
+        inputTokens: msg.usage.input_tokens,
+        outputTokens: msg.usage.output_tokens,
+        cacheReadTokens: (msg.usage as { cache_read_input_tokens?: number }).cache_read_input_tokens ?? 0,
+        detail: ticketId,
       });
 
       const block = msg.content.find((b) => b.type === "tool_use");

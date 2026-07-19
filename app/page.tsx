@@ -2,20 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { project, costCodes } from "@/lib/seed";
+import { project } from "@/lib/seed";
 import { allDocuments } from "@/lib/documents";
 import { useStore } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/card";
-import { usd } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import {
   Building2,
-  CalendarClock,
-  Layers,
-  FileStack,
-  FileSearch,
-  Calculator,
-  Flag,
+  ScrollText,
+  LineChart,
   ArrowRight,
   UploadCloud,
   Lock,
@@ -24,47 +19,17 @@ import {
   CheckCircle2,
   Loader2,
   CircleDashed,
+  AlertTriangle,
   RotateCcw,
 } from "lucide-react";
 
-type Tone = "accent" | "primary" | "success" | "warning";
-const toneChip: Record<Tone, string> = {
-  accent: "bg-accent/10 text-accent",
-  primary: "bg-primary/10 text-primary",
-  success: "bg-success/10 text-success",
-  warning: "bg-warning/10 text-warning",
-};
-
-function Stat({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  tone: Tone;
-}) {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-4 p-5">
-        <div className={cn("flex h-11 w-11 items-center justify-center rounded-xl", toneChip[tone])}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <div>
-          <div className="text-xs text-muted-foreground">{label}</div>
-          <div className="text-xl font-bold">{value}</div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function Overview() {
-  const { loaded, loadProject, reset } = useStore();
+  const { loaded, loadProject, reset, tickets } = useStore();
 
   if (!loaded) return <UploadScreen onLoad={loadProject} />;
+
+  const toReview = tickets.filter((t) => t.status === "unscanned" || t.status === "needsReview").length;
+  const approved = tickets.filter((t) => t.status === "approved").length;
 
   const details: [string, string][] = [
     ["General Contractor", project.gc],
@@ -73,91 +38,88 @@ export default function Overview() {
     ["Superintendent", project.superintendent],
     ["Address", project.address],
     ["Job Number", project.jobNumber],
-    ["Start Date", project.startDate],
-    ["Reporting As Of", project.asOfDate],
   ];
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-8">
-      <div className="flex items-start justify-between rounded-xl border bg-gradient-to-br from-primary to-primary/85 p-6 text-white shadow-soft">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-medium text-white/70">
-            <Building2 className="h-4 w-4" /> Project Overview
+    <div className="mx-auto max-w-5xl space-y-6 p-8">
+      {/* Compact project header */}
+      <div className="flex items-start justify-between overflow-hidden rounded-2xl border bg-gradient-to-br from-primary to-primary/85 p-6 text-white shadow-soft">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-white/60">
+            <Building2 className="h-4 w-4" /> Active Project
           </div>
           <h1 className="mt-1.5 text-3xl font-bold tracking-tight">{project.name}</h1>
-          <p className="mt-1 text-sm text-white/70">
-            {project.location} · {project.gc}
+          <p className="mt-1 truncate text-sm text-white/70">
+            {project.gc} · {project.owner} · Job {project.jobNumber}
           </p>
         </div>
         <button
           onClick={reset}
-          className="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/20"
+          className="ml-4 inline-flex shrink-0 items-center gap-1.5 rounded-md bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/20"
         >
           <RotateCcw className="h-3.5 w-3.5" /> Reset demo
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat icon={CalendarClock} label="Timeline" value={`Wk ${project.asOfWeek} / ${project.durationWeeks}`} tone="accent" />
-        <Stat icon={Building2} label="Contract Value" value={usd(project.contractValue)} tone="primary" />
-        <Stat icon={Layers} label="Cost Codes" value={String(costCodes.length)} tone="success" />
-        <Stat icon={FileStack} label="Documents" value={String(allDocuments.length)} tone="warning" />
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="mb-4 text-sm font-semibold">Project Details</h2>
-            <dl className="space-y-2.5">
-              {details.map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 border-b border-border/60 pb-2 text-sm">
-                  <dt className="text-muted-foreground">{k}</dt>
-                  <dd className="text-right font-medium">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="mb-4 text-sm font-semibold">What this tool does</h2>
-            <div className="space-y-3">
-              {[
-                { icon: FileSearch, tag: "Reads your paperwork", note: "It reads the documents and handwritten timecards you upload and pulls out the numbers for you.", tone: "accent" as Tone },
-                { icon: CheckCircle2, tag: "You approve the hours", note: "You review the hours it pulled from each timecard, fix anything that looks off, and approve it — then export a payroll-ready spreadsheet.", tone: "warning" as Tone },
-                { icon: Calculator, tag: "Keeps the running totals", note: "As work comes in, it tracks the budget, hours, and schedule so you don't have to add it up by hand.", tone: "primary" as Tone },
-                { icon: Flag, tag: "Tells you where to look", note: "It flags where the project is slipping over budget or behind schedule — so problems surface early.", tone: "success" as Tone },
-              ].map((s) => (
-                <div key={s.tag} className="flex gap-3 rounded-lg border bg-muted/20 p-3.5">
-                  <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", toneChip[s.tone])}>
-                    <s.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold">{s.tag}</div>
-                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{s.note}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex flex-wrap gap-3">
+      {/* Foreground the core job: timecard review */}
+      <div className="grid gap-4 md:grid-cols-[1.5fr_1fr]">
         <Link
           href="/timecards"
-          className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+          className="group flex flex-col justify-between rounded-2xl border bg-card p-6 shadow-card transition hover:border-accent/40 hover:shadow-soft"
         >
-          Review Timecards <ArrowRight className="h-4 w-4" />
+          <div>
+            <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
+              <ScrollText className="h-5 w-5" />
+            </div>
+            <h2 className="mt-3 text-xl font-bold">Review this week&apos;s timecards</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              {toReview > 0
+                ? `${toReview} card${toReview > 1 ? "s" : ""} waiting. The tool reads each handwritten ticket — you verify the hours and approve them for payroll.`
+                : `All caught up — ${approved} approved. Re-open to review or export the payroll CSV.`}
+            </p>
+          </div>
+          <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
+            {toReview > 0 ? "Start review" : "Open timecards"}
+            <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+          </span>
         </Link>
+
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-5 py-2.5 text-sm font-semibold hover:bg-muted"
+          className="group flex flex-col justify-between rounded-2xl border bg-card p-6 shadow-card transition hover:border-primary/30 hover:shadow-soft"
         >
-          Open Dashboard <ArrowRight className="h-4 w-4" />
+          <div>
+            <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <LineChart className="h-5 w-5" />
+            </div>
+            <h2 className="mt-3 text-xl font-bold">Project health</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Budget vs. progress, labor productivity, and schedule risk — with an AI read on what needs attention.
+            </p>
+          </div>
+          <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+            Open dashboard
+            <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+          </span>
         </Link>
       </div>
+
+      {/* Project facts — no dashboard-style KPIs */}
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Project Details
+          </h2>
+          <dl className="grid grid-cols-1 gap-x-8 gap-y-2.5 sm:grid-cols-2">
+            {details.map(([k, v]) => (
+              <div key={k} className="flex justify-between gap-4 border-b border-border/60 pb-2 text-sm">
+                <dt className="text-muted-foreground">{k}</dt>
+                <dd className="text-right font-medium">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -191,11 +153,16 @@ function UploadScreen({ onLoad }: { onLoad: () => void }) {
           Start with your project&apos;s paperwork
         </h1>
         <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
-          To show how the tool works, I prepared a set of{" "}
-          <span className="font-medium text-foreground">sample documents</span> for a
-          fictional job — a Midtown office fit-out. In real use you&apos;d upload your own;
-          here, just press <span className="font-medium text-foreground">Upload</span> to
-          bring these in.
+          Load the sample paperwork below to explore the tool. In production you&apos;d upload your own.
+        </p>
+      </div>
+
+      <div className="mb-5 flex items-start gap-3 rounded-xl border border-warning/50 bg-warning/10 px-4 py-3.5 text-sm">
+        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
+        <p className="text-foreground/80">
+          <span className="font-semibold text-foreground">This is a demo — the entire scenario is fictional.</span>{" "}
+          The project (633 Third Avenue), its documents, and the handwritten timecards are all synthetic.
+          Real contractor cost documents (SOVs, payroll, timecards) are confidential, so nothing here is real data.
         </p>
       </div>
 
@@ -213,7 +180,6 @@ function UploadScreen({ onLoad }: { onLoad: () => void }) {
             )}
           </div>
 
-          {/* progress bar */}
           <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-accent transition-all duration-200"
@@ -243,9 +209,9 @@ function UploadScreen({ onLoad }: { onLoad: () => void }) {
                     <CheckCircle2 className="h-4 w-4 text-success" />
                   ) : active ? (
                     <Loader2 className="h-4 w-4 animate-spin text-accent" />
-                  ) : (
+                  ) : uploading ? (
                     <CircleDashed className="h-4 w-4 text-muted-foreground/40" />
-                  )}
+                  ) : null}
                 </div>
               );
             })}
@@ -259,9 +225,7 @@ function UploadScreen({ onLoad }: { onLoad: () => void }) {
           className="flex cursor-not-allowed items-center justify-center gap-2 rounded-md border border-dashed bg-muted/30 px-4 py-3 text-sm font-medium text-muted-foreground"
         >
           <Lock className="h-4 w-4" /> Upload from Computer
-          <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-[10px]">
-            Production
-          </span>
+          <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-[10px]">Production</span>
         </button>
         <button
           onClick={startUpload}
@@ -285,10 +249,6 @@ function UploadScreen({ onLoad }: { onLoad: () => void }) {
         </button>
       </div>
 
-      <p className="mt-6 text-center text-xs text-muted-foreground">
-        All sample data is synthetic — real GC cost documents (SOVs, payroll, timecards) are
-        confidential and not publicly available.
-      </p>
     </div>
   );
 }

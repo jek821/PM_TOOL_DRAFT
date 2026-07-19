@@ -28,13 +28,9 @@ import {
   CheckCircle2,
   ArrowUpRight,
   FileText,
+  Clock,
+  Wallet,
 } from "lucide-react";
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const fmtShort = (iso: string) => {
-  const [, m, d] = iso.split("-").map(Number);
-  return `${MONTHS[m - 1]} ${d}`;
-};
 
 export default function DashboardPage() {
   const { loaded, tickets, progress, baseline } = useStore();
@@ -77,17 +73,18 @@ export default function DashboardPage() {
 
   const metricFor = (code: string | null) =>
     code ? context.byCostCode.find((m) => m.code === code) : undefined;
-  const topOverrun = Math.max(0, ...context.byCostCode.map((m) => m.projectedLaborOverrun ?? 0));
-  const laborApproved = context.byCostCode.some((m) => m.hasLaborData);
+  const netLabor = context.byCostCode.reduce((s, m) => s + (m.projectedLaborOverrun ?? 0), 0);
+  const anyLabor = context.byCostCode.some((m) => m.hasLaborData);
   const pendingCount = tickets.filter(
     (t) => t.status === "unscanned" || t.status === "needsReview"
   ).length;
   const actualPct = Math.round(context.overallActualPct);
   const plannedPct = Math.round(context.overallPlannedPct);
   const behindPts = plannedPct - actualPct; // >0 = behind plan
-  const asOfShort = fmtShort(context.asOfDate);
   const coDelta = context.revisedContract - context.originalContract;
   const totalCodes = context.byCostCode.length;
+  const marginDelta = context.projectedMargin - context.plannedMargin; // <0 = eroded by labor
+  const weeksLate = context.projectedFinishWeek != null ? context.projectedFinishWeek - context.durationWeeks : null;
 
   return (
     <div className="mx-auto max-w-6xl space-y-5 p-6">
@@ -111,7 +108,7 @@ export default function DashboardPage() {
         </Link>
       )}
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <Kpi
           icon={CalendarClock}
           label="Overall complete"
@@ -119,7 +116,7 @@ export default function DashboardPage() {
           tone="accent"
           sub={
             <>
-              vs {plannedPct}% planned by {asOfShort}
+              vs {plannedPct}% planned to date
               {behindPts > 0 ? (
                 <span className="mt-0.5 block font-semibold text-danger">{behindPts} pts behind plan</span>
               ) : behindPts < 0 ? (
@@ -128,6 +125,43 @@ export default function DashboardPage() {
                 <span className="mt-0.5 block font-medium text-success">on plan</span>
               )}
             </>
+          }
+        />
+        <Kpi
+          icon={Clock}
+          label="Projected completion"
+          value={context.projectedFinishWeek != null ? `Week ${context.projectedFinishWeek}` : "—"}
+          tone={weeksLate == null ? "primary" : weeksLate > 0 ? "danger" : weeksLate < 0 ? "success" : "primary"}
+          sub={
+            weeksLate == null ? (
+              "needs progress data"
+            ) : (
+              <>
+                planned Week {context.durationWeeks}
+                {weeksLate > 0 ? (
+                  <span className="mt-0.5 block font-semibold text-danger">
+                    {weeksLate} wk{weeksLate > 1 ? "s" : ""} late at this pace
+                  </span>
+                ) : weeksLate < 0 ? (
+                  <span className="mt-0.5 block font-semibold text-success">
+                    {-weeksLate} wk{-weeksLate > 1 ? "s" : ""} ahead of schedule
+                  </span>
+                ) : (
+                  <span className="mt-0.5 block font-medium text-success">on schedule</span>
+                )}
+              </>
+            )
+          }
+        />
+        <Kpi
+          icon={context.flagged.length ? AlertTriangle : CheckCircle2}
+          label="Cost codes flagged"
+          value={String(context.flagged.length)}
+          tone={context.flagged.length ? "warning" : "success"}
+          sub={
+            context.flagged.length
+              ? `of ${totalCodes} — over budget or behind schedule`
+              : `all ${totalCodes} on track`
           }
         />
         <Kpi
@@ -150,22 +184,41 @@ export default function DashboardPage() {
           }
         />
         <Kpi
-          icon={context.flagged.length ? AlertTriangle : CheckCircle2}
-          label="Cost codes flagged"
-          value={String(context.flagged.length)}
-          tone={context.flagged.length ? "warning" : "success"}
+          icon={Wallet}
+          label="Projected margin"
+          value={usd(context.projectedMargin)}
+          tone={context.projectedMargin < 0 ? "danger" : marginDelta < -1 ? "warning" : "success"}
           sub={
-            context.flagged.length
-              ? `of ${totalCodes} — over budget or behind schedule`
-              : `all ${totalCodes} on track`
+            <>
+              vs {usd(context.plannedMargin)} planned
+              {marginDelta < -1 ? (
+                <span className="mt-0.5 block font-semibold text-danger">
+                  {usd(-marginDelta)} eaten by labor overruns
+                </span>
+              ) : marginDelta > 1 ? (
+                <span className="mt-0.5 block font-semibold text-success">
+                  {usd(marginDelta)} ahead on labor
+                </span>
+              ) : (
+                <span className="mt-0.5 block font-medium text-foreground/70">materials held at budget</span>
+              )}
+            </>
           }
         />
         <Kpi
-          icon={topOverrun > 0 ? TrendingUp : CheckCircle2}
-          label="Projected labor overrun"
-          value={topOverrun > 0 ? usd(topOverrun) : "—"}
-          tone={topOverrun > 0 ? "danger" : "success"}
-          sub={topOverrun > 0 ? "worst line, over its labor budget" : "no lines over labor budget"}
+          icon={netLabor > 1 ? TrendingUp : CheckCircle2}
+          label="Projected labor"
+          value={anyLabor ? usd(Math.abs(netLabor)) : "—"}
+          tone={netLabor > 1 ? "danger" : netLabor < -1 ? "success" : "primary"}
+          sub={
+            !anyLabor
+              ? "no labor logged yet"
+              : netLabor > 1
+              ? "over labor budget"
+              : netLabor < -1
+              ? "under budget · saved"
+              : "on labor budget"
+          }
         />
       </div>
 
@@ -183,11 +236,6 @@ export default function DashboardPage() {
           {analysis?.insights.map((ins) => (
             <InsightCard key={ins.costCode ?? ins.title} insight={ins} metric={metricFor(ins.costCode)} />
           ))}
-          {!laborApproved && (
-            <p className="text-xs text-muted-foreground">
-              Tip: labor productivity appears once you approve timecards on the Timecards page.
-            </p>
-          )}
         </div>
       </div>
 
@@ -200,7 +248,7 @@ export default function DashboardPage() {
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{children}</div>;
+  return <div className="mb-2 font-display text-xs font-semibold uppercase tracking-wide text-muted-foreground">{children}</div>;
 }
 
 function SummaryBanner({ analysis, analyzing }: { analysis: AnalysisResult | null; analyzing: boolean }) {
@@ -209,7 +257,7 @@ function SummaryBanner({ analysis, analyzing }: { analysis: AnalysisResult | nul
     return (
       <div className="overflow-hidden rounded-xl border shadow-soft">
         <div className="bg-gradient-to-br from-primary/90 to-primary p-5 text-white">
-          <div className="flex items-center gap-2 text-xs font-medium text-white/85">
+          <div className="flex items-center gap-2 font-display text-xs font-medium text-white/85">
             <Sparkles className="h-4 w-4" /> AI Project Summary
             <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wide">
               Analyzing
@@ -230,7 +278,7 @@ function SummaryBanner({ analysis, analyzing }: { analysis: AnalysisResult | nul
   return (
     <div className="overflow-hidden rounded-xl border shadow-soft">
       <div className={cn("bg-gradient-to-br p-5 text-white", tone)}>
-        <div className="flex items-center gap-2 text-xs font-medium text-white/85">
+        <div className="flex items-center gap-2 font-display text-xs font-medium text-white/85">
           <Sparkles className="h-4 w-4" /> AI Project Summary
           <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wide">{label}</span>
           {analysis.source !== "live" && (
@@ -262,7 +310,7 @@ function Kpi({ icon: Icon, label, value, sub, tone }: { icon: React.ElementType;
           <Icon className="h-5 w-5" />
         </div>
         <div className="text-xs text-muted-foreground">{label}</div>
-        <div className="text-xl font-bold">{value}</div>
+        <div className="font-display text-xl font-bold tracking-tight">{value}</div>
         <div className="text-[11px] leading-snug text-muted-foreground">{sub}</div>
       </CardContent>
     </Card>
@@ -401,7 +449,7 @@ function CostTable({ rows }: { rows: CostCodeMetrics[] }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b text-[11px] uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b font-display text-[11px] uppercase tracking-wide text-muted-foreground">
                 <th className="px-4 py-2.5 text-left font-medium">Cost Code</th>
                 <th className="px-4 py-2.5 text-left font-medium">Description</th>
                 <th className="px-4 py-2.5 text-left font-medium">Schedule (actual / planned)</th>

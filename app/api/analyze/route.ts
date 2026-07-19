@@ -10,6 +10,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import type { ProjectContext } from "@/lib/metrics";
 import { sampleAnalysis, type AnalysisResult, type Insight } from "@/lib/analyze";
+import { recordUsage } from "@/lib/usage";
 
 export const runtime = "nodejs";
 
@@ -150,6 +151,14 @@ export async function POST(req: Request) {
             content: `Here is the project context (JSON):\n\n${JSON.stringify(digest(ctx), null, 2)}`,
           },
         ],
+      });
+      recordUsage({
+        ts: Date.now(),
+        route: "analyze",
+        model: MODEL,
+        inputTokens: msg.usage.input_tokens,
+        outputTokens: msg.usage.output_tokens,
+        cacheReadTokens: (msg.usage as { cache_read_input_tokens?: number }).cache_read_input_tokens ?? 0,
       });
       const block = msg.content.find((b) => b.type === "tool_use");
       if (block && block.type === "tool_use") {

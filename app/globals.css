@@ -10,9 +10,9 @@
   --muted: 210 16% 93%;
   --muted-foreground: 215 15% 45%;
   --border: 214 20% 88%;
-  --primary: 222 47% 20%;          /* deep navy — matches the documents */
+  --primary: 224 45% 18%;          /* deep ink navy — matches the documents */
   --primary-foreground: 0 0% 100%;
-  --accent: 199 89% 42%;
+  --accent: 224 90% 58%;           /* electric cobalt */
   --danger: 0 72% 48%;
   --warning: 35 92% 45%;
   --success: 152 55% 38%;
@@ -26,6 +26,12 @@ html {
   font-size: 18px; /* base scale — makes the whole app read ~1 zoom step larger */
 }
 
+/* Display type for headings — the distinctive voice of the UI. */
+h1, h2, h3, .font-display {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: -0.012em;
+}
+
 html,
 body {
   padding: 0;
@@ -35,6 +41,7 @@ body {
 body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 

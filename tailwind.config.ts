@@ -25,8 +25,12 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
-          "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto",
-          "Helvetica Neue", "Arial", "sans-serif",
+          "var(--font-body)", "-apple-system", "BlinkMacSystemFont", "Segoe UI",
+          "Roboto", "Helvetica Neue", "Arial", "sans-serif",
+        ],
+        display: [
+          "var(--font-display)", "-apple-system", "BlinkMacSystemFont", "Segoe UI",
+          "sans-serif",
         ],
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
       },

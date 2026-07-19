@@ -62,7 +62,7 @@ export default function Overview() {
       </div>
 
       {/* Foreground the core job: timecard review */}
-      <div className="grid gap-4 md:grid-cols-[1.5fr_1fr]">
+      <div className="grid gap-4 md:grid-cols-2">
         <Link
           href="/timecards"
           className="group flex flex-col justify-between rounded-2xl border bg-card p-6 shadow-card transition hover:border-accent/40 hover:shadow-soft"
@@ -71,7 +71,7 @@ export default function Overview() {
             <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
               <ScrollText className="h-5 w-5" />
             </div>
-            <h2 className="mt-3 text-xl font-bold">Review this week&apos;s timecards</h2>
+            <h2 className="mt-3 text-xl font-bold">Review timecards</h2>
             <p className="mt-1.5 text-sm text-muted-foreground">
               {toReview > 0
                 ? `${toReview} card${toReview > 1 ? "s" : ""} waiting. The tool reads each handwritten ticket — you verify the hours and approve them for payroll.`

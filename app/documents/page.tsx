@@ -155,8 +155,9 @@ export default function DocumentsPage() {
             </p>
           </div>
           {selected.kind === "html" ? (
-            selected.id.startsWith("pr") ? (
-              <EditableProgressReport week={Number(selected.id.slice(2)) - 1} />
+            selected.id === "pr3" ? (
+              // Only the current week is editable; render the interactive table.
+              <EditableProgressReport week={2} />
             ) : selected.id === "sov" ? (
               <EditableSOV />
             ) : selected.id === "budget" ? (
@@ -306,7 +307,7 @@ function TimecardEditor({ ticketId }: { ticketId: string }) {
                 )}
               </button>
             </div>
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto"><table className="w-full min-w-[26rem] text-sm">
               <thead>
                 <tr className="border-b text-[11px] uppercase tracking-wide text-muted-foreground">
                   <th className="px-3 py-2 text-left font-medium">Class</th>
@@ -348,7 +349,7 @@ function TimecardEditor({ ticketId }: { ticketId: string }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
 
           {changes.length > 0 && (
@@ -453,7 +454,8 @@ function EditableProgressReport({ week }: { week: number }) {
           <MetaRow k="Job #" v={project.jobNumber} />
         </dl>
 
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[26rem] text-sm">
           <thead>
             <tr className="border-b text-[11px] uppercase tracking-wide text-muted-foreground">
               <th className="py-2 text-left font-medium">Cost Code</th>
@@ -495,6 +497,7 @@ function EditableProgressReport({ week }: { week: number }) {
             })}
           </tbody>
         </table>
+        </div>
 
         <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
           <PencilLine className="h-3.5 w-3.5" />
@@ -529,7 +532,8 @@ function EditableSOV() {
           <MetaRow k="Owner" v={project.owner} />
           <MetaRow k="Job #" v={project.jobNumber} />
         </dl>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[22rem] text-sm">
           <thead>
             <tr className="border-b text-[11px] uppercase tracking-wide text-muted-foreground">
               <th className="py-2 text-left font-medium">Cost Code</th>
@@ -560,6 +564,7 @@ function EditableSOV() {
             </tr>
           </tbody>
         </table>
+        </div>
         <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
           <PencilLine className="h-3.5 w-3.5" /> Edit any value — the dashboard analysis updates live, and it resets on refresh.
         </p>
@@ -587,7 +592,8 @@ function EditableBudget() {
           <MetaRow k="Project" v={project.name} />
           <MetaRow k="General Contractor" v={project.gc} />
         </dl>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[40rem] text-sm">
           <thead>
             <tr className="border-b text-[11px] uppercase tracking-wide text-muted-foreground">
               <th className="py-2 text-left font-medium">Cost Code</th>
@@ -636,6 +642,7 @@ function EditableBudget() {
             </tr>
           </tbody>
         </table>
+        </div>
         <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
           <PencilLine className="h-3.5 w-3.5" /> Edit any value — planned hours and labor $ feed the
           productivity and budget checks. Resets on refresh.

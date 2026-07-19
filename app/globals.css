@@ -64,14 +64,6 @@ body {
   animation: progress-indeterminate 1.1s ease-in-out infinite;
 }
 
-/* Documents viewer: on small screens, let a wide table scroll horizontally
-   inside its own card instead of forcing the whole panel wider than the view. */
-.doc-viewer table {
-  display: block;
-  max-width: 100%;
-  overflow-x: auto;
-}
-
 /* rows streaming in as sample documents "load" */
 @keyframes doc-in {
   from { opacity: 0; transform: translateY(5px); }

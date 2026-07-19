@@ -82,7 +82,7 @@ export default function DocumentsPage() {
   return (
     <div className="flex h-[calc(100vh-3.75rem)]">
       {/* List */}
-      <div className="w-80 shrink-0 overflow-auto border-r bg-card">
+      <div className="w-56 shrink-0 overflow-auto border-r bg-card sm:w-64 lg:w-80">
         <div className="border-b px-4 py-3">
           <h1 className="text-sm font-semibold">Project Documents</h1>
           <p className="text-xs text-muted-foreground">
@@ -144,7 +144,7 @@ export default function DocumentsPage() {
             Export as PDF
           </a>
         </div>
-        <div className="flex-1 overflow-auto p-4">
+        <div className="doc-viewer flex-1 overflow-auto p-4">
           <div className="mx-auto mb-4 flex max-w-4xl items-start gap-3 rounded-xl border border-accent/40 bg-accent/5 px-4 py-3 text-sm">
             <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
             <p className="text-foreground/80">
@@ -264,7 +264,7 @@ function TimecardEditor({ ticketId }: { ticketId: string }) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           <div className="rounded-xl border bg-card p-4 shadow-sm">
             <div className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Ticket data
@@ -369,7 +369,7 @@ function TimecardEditor({ ticketId }: { ticketId: string }) {
           )}
         </div>
 
-        <div>
+        <div className="min-w-0">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Original ticket</div>
           <ZoomableImage
             src={t.file}

@@ -18,7 +18,7 @@ import {
   Image as ImageIcon,
   CheckCircle2,
   Loader2,
-  CircleDashed,
+  FolderOpen,
   AlertTriangle,
   RotateCcw,
 } from "lucide-react";
@@ -128,6 +128,7 @@ function UploadScreen({ onLoad }: { onLoad: () => void }) {
   const [uploading, setUploading] = useState(false);
   const [done, setDone] = useState(0);
   const total = allDocuments.length;
+  const started = uploading || done > 0;
 
   const startUpload = () => {
     if (uploading) return;
@@ -170,52 +171,41 @@ function UploadScreen({ onLoad }: { onLoad: () => void }) {
         <CardContent className="p-5">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold">
-              Sample documents{" "}
+              Sample document set{" "}
               <span className="font-normal text-muted-foreground">· {total} files</span>
             </h2>
-            {uploading && (
+            {started && (
               <span className="text-xs font-medium text-accent">
-                Uploading {done}/{total}…
+                {done < total ? `Loading ${done}/${total}…` : `Loaded ${total} of ${total}`}
               </span>
             )}
           </div>
 
-          <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-accent transition-all duration-200"
-              style={{ width: `${(done / total) * 100}%` }}
-            />
-          </div>
-
-          <div className="max-h-72 space-y-1.5 overflow-auto pr-1">
-            {allDocuments.map((d, i) => {
-              const uploaded = i < done;
-              const active = uploading && i === done;
-              const Icon = d.kind === "image" ? ImageIcon : FileText;
-              return (
+          {started ? (
+            <>
+              <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-muted">
                 <div
-                  key={d.id}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md border px-3 py-2 transition-colors",
-                    uploaded ? "border-success/30 bg-success/5" : "border-border"
-                  )}
-                >
-                  <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{d.title}</div>
-                    <div className="text-[11px] text-muted-foreground">{d.category}</div>
-                  </div>
-                  {uploaded ? (
-                    <CheckCircle2 className="h-4 w-4 text-success" />
-                  ) : active ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-accent" />
-                  ) : uploading ? (
-                    <CircleDashed className="h-4 w-4 text-muted-foreground/40" />
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
+                  className="h-full rounded-full bg-accent transition-all duration-200"
+                  style={{ width: `${(done / total) * 100}%` }}
+                />
+              </div>
+              <div className="max-h-72 space-y-1.5 overflow-auto pr-1">
+                {allDocuments.slice(0, done).map((d) => (
+                  <DocRow key={d.id} d={d} />
+                ))}
+                {uploading && done < total && <DocRow key={allDocuments[done].id} d={allDocuments[done]} active />}
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/20 px-6 py-10 text-center">
+              <FolderOpen className="h-8 w-8 text-muted-foreground/50" />
+              <div className="text-sm font-medium">{total} documents ready to load</div>
+              <p className="max-w-sm text-xs text-muted-foreground">
+                Nothing to pick here — the button below loads the whole set (schedule of values, budget,
+                progress reports, a change order, and the timecards). They&apos;ll appear here as they load.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -249,6 +239,31 @@ function UploadScreen({ onLoad }: { onLoad: () => void }) {
         </button>
       </div>
 
+    </div>
+  );
+}
+
+/** One document row in the load list. Rendered only once a file has "loaded"
+ * (or is actively loading), so the pre-load screen shows no pickable list. */
+function DocRow({ d, active }: { d: (typeof allDocuments)[number]; active?: boolean }) {
+  const Icon = d.kind === "image" ? ImageIcon : FileText;
+  return (
+    <div
+      className={cn(
+        "animate-doc-in flex items-center gap-3 rounded-md border px-3 py-2",
+        active ? "border-border" : "border-success/30 bg-success/5"
+      )}
+    >
+      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-medium">{d.title}</div>
+        <div className="text-[11px] text-muted-foreground">{d.category}</div>
+      </div>
+      {active ? (
+        <Loader2 className="h-4 w-4 animate-spin text-accent" />
+      ) : (
+        <CheckCircle2 className="h-4 w-4 text-success" />
+      )}
     </div>
   );
 }

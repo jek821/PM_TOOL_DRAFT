@@ -30,6 +30,11 @@ export interface AnalysisResult {
 // the analysis; survives client-side navigation, resets on a full page reload.
 let memoKey: string | null = null;
 let memoResult: AnalysisResult | null = null;
+// In-flight request dedup: if the dashboard mounts again (e.g. you navigate
+// away and back) while an identical analysis is still running, reuse that same
+// request instead of firing — and paying for — a second Claude call.
+let inflightKey: string | null = null;
+let inflight: Promise<AnalysisResult> | null = null;
 
 function contextKey(ctx: ProjectContext): string {
   return JSON.stringify({
@@ -62,21 +67,36 @@ export function getCachedAnalysis(ctx: ProjectContext): AnalysisResult | null {
 export async function analyzeProject(ctx: ProjectContext): Promise<AnalysisResult> {
   const key = contextKey(ctx);
   if (key === memoKey && memoResult) return memoResult; // unchanged inputs -> no re-run
-  let result: AnalysisResult;
+  if (key === inflightKey && inflight) return inflight; // identical request already running -> reuse it
+
+  const run = (async (): Promise<AnalysisResult> => {
+    let result: AnalysisResult;
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ context: ctx }),
+      });
+      if (!res.ok) throw new Error(`analyze ${res.status}`);
+      result = (await res.json()) as AnalysisResult;
+    } catch {
+      result = sampleAnalysis(ctx);
+    }
+    memoKey = key;
+    memoResult = result;
+    return result;
+  })();
+
+  inflightKey = key;
+  inflight = run;
   try {
-    const res = await fetch("/api/analyze", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ context: ctx }),
-    });
-    if (!res.ok) throw new Error(`analyze ${res.status}`);
-    result = (await res.json()) as AnalysisResult;
-  } catch {
-    result = sampleAnalysis(ctx);
+    return await run;
+  } finally {
+    if (inflightKey === key) {
+      inflightKey = null;
+      inflight = null;
+    }
   }
-  memoKey = key;
-  memoResult = result;
-  return result;
 }
 
 export function sampleAnalysis(ctx: ProjectContext): AnalysisResult {

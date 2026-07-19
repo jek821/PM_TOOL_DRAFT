@@ -73,14 +73,15 @@ const weekFromId = (id: string): number | null => {
 export function computeProjectContext(
   approvedTickets: TicketState[],
   progress: Record<string, { planned: number[]; actual: number[] }> = progressByCostCode,
-  codes: typeof costCodes = costCodes
+  codes: typeof costCodes = costCodes,
+  cos: typeof changeOrders = changeOrders
 ): ProjectContext {
   const latest = project.asOfWeek - 1; // index into [w1,w2,w3]
 
   // change orders -> per-code $ delta + revised contract
   const coByCode: Record<string, number> = {};
   let coTotal = 0;
-  for (const co of changeOrders) {
+  for (const co of cos) {
     coByCode[co.costCode] = (coByCode[co.costCode] || 0) + co.netIncrease;
     coTotal += co.netIncrease;
   }

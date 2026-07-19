@@ -4,15 +4,22 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { type ExtractionResult } from "./mock-extractions";
-import { progressByCostCode, costCodes as seedCostCodes } from "./seed";
+import { progressByCostCode, costCodes as seedCostCodes, changeOrders as seedChangeOrders } from "./seed";
 import { projects, DEFAULT_PROJECT_ID, projectById, type ProjectMeta } from "./projects";
-import type { ProgressSeries, CostCodeBaseline } from "./types";
+import type { ProgressSeries, CostCodeBaseline, ChangeOrder } from "./types";
+
+// Remembers, in the browser, that this visitor already loaded the demo — so a
+// refresh drops them straight back into the app (with all data reset to
+// defaults) instead of the upload screen. Cleared by "Reset demo".
+const LOADED_KEY = "pm_loaded";
+export type COField = "labor" | "material" | "equipment";
 import {
   applyExtraction,
   initialTickets,
@@ -59,6 +66,8 @@ interface Store {
   setProgressActual: (code: string, week: number, value: number) => void;
   baseline: CostCodeBaseline[];
   setCostField: (code: string, field: CostField, value: number) => void;
+  changeOrders: ChangeOrder[];
+  setChangeOrderField: (id: string, field: COField, value: number) => void;
   projects: ProjectMeta[];
   currentProject: ProjectMeta;
   setProjectId: (id: string) => void;
@@ -80,6 +89,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [baseline, setBaseline] = useState<CostCodeBaseline[]>(() =>
     JSON.parse(JSON.stringify(seedCostCodes))
   );
+  const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>(() =>
+    JSON.parse(JSON.stringify(seedChangeOrders))
+  );
   const [toast, setToast] = useState<string | null>(null);
   const [currentProjectId, setCurrentProjectId] = useState(DEFAULT_PROJECT_ID);
   const currentProject = projectById(currentProjectId);
@@ -90,17 +102,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
     window.setTimeout(() => setToast((cur) => (cur === msg ? null : cur)), 4200);
   }, []);
 
+  // On first mount, if this browser already loaded the demo before, skip the
+  // upload screen. Data itself is NOT persisted — every load starts from seed
+  // defaults (timecards un-approved, edits cleared), which is what we want.
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(LOADED_KEY) === "1") setLoaded(true);
+    } catch {
+      /* storage blocked (private mode / SSR) — just show the upload screen */
+    }
+  }, []);
+
   const loadProject = useCallback(() => {
     setLoaded(true);
+    try {
+      localStorage.setItem(LOADED_KEY, "1");
+    } catch {
+      /* ignore */
+    }
     setToast("Sample project loaded — 4 timecards ready for review");
     window.setTimeout(() => setToast(null), 4200);
   }, []);
 
   const reset = useCallback(() => {
     setLoaded(false);
+    try {
+      localStorage.removeItem(LOADED_KEY);
+    } catch {
+      /* ignore */
+    }
     setTickets(initialTickets());
     setProgressState(JSON.parse(JSON.stringify(progressByCostCode)));
     setBaseline(JSON.parse(JSON.stringify(seedCostCodes)));
+    setChangeOrders(JSON.parse(JSON.stringify(seedChangeOrders)));
     setCurrentProjectId(DEFAULT_PROJECT_ID);
   }, []);
 
@@ -109,13 +143,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setBaseline((b) => b.map((c) => (c.code === code ? { ...c, [field]: v } : c)));
   }, []);
 
-  const setProgressActual = useCallback((code: string, week: number, value: number) => {
-    const v = Math.max(0, Math.min(100, Math.round(value)));
-    setProgressState((p) =>
-      p[code]
-        ? { ...p, [code]: { ...p[code], actual: p[code].actual.map((x, i) => (i === week ? v : x)) } }
-        : p
+  // Edit a change-order cost bucket; the net increase and revised contract are
+  // derived so the SOV / margin KPIs on the dashboard react immediately.
+  const setChangeOrderField = useCallback((id: string, field: COField, value: number) => {
+    const v = Math.max(0, Math.round(value));
+    setChangeOrders((cos) =>
+      cos.map((co) => {
+        if (co.id !== id) return co;
+        const next = { ...co, [field]: v };
+        next.netIncrease = next.labor + next.material + next.equipment;
+        next.revisedContract = next.originalContract + next.netIncrease;
+        return next;
+      })
     );
+  }, []);
+
+  const setProgressActual = useCallback((code: string, week: number, value: number) => {
+    setProgressState((p) => {
+      const series = p[code];
+      if (!series) return p;
+      // Cumulative % can't go backwards: floor at the prior week's value.
+      const floor = week > 0 ? series.actual[week - 1] : 0;
+      const v = Math.max(floor, Math.min(100, Math.round(value)));
+      return { ...p, [code]: { ...series, actual: series.actual.map((x, i) => (i === week ? v : x)) } };
+    });
   }, []);
 
   const scanAll = useCallback(() => {
@@ -216,6 +267,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setProgressActual,
         baseline,
         setCostField,
+        changeOrders,
+        setChangeOrderField,
         projects,
         currentProject,
         setProjectId,

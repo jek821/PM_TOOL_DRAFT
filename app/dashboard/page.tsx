@@ -33,14 +33,19 @@ import {
 } from "lucide-react";
 
 export default function DashboardPage() {
-  const { loaded, tickets, progress, baseline } = useStore();
+  const { loaded, tickets, progress, baseline, changeOrders } = useStore();
 
   const context = useMemo(
     () =>
       loaded
-        ? computeProjectContext(tickets.filter((t) => t.status === "approved"), progress, baseline)
+        ? computeProjectContext(
+            tickets.filter((t) => t.status === "approved"),
+            progress,
+            baseline,
+            changeOrders
+          )
         : null,
-    [loaded, tickets, progress, baseline]
+    [loaded, tickets, progress, baseline, changeOrders]
   );
 
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(() =>

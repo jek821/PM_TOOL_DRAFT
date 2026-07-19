@@ -148,9 +148,10 @@ export default function DocumentsPage() {
           <div className="mx-auto mb-4 flex max-w-4xl items-start gap-3 rounded-xl border border-accent/40 bg-accent/5 px-4 py-3 text-sm">
             <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
             <p className="text-foreground/80">
-              <span className="font-semibold text-foreground">Try it — this demo is interactive.</span>{" "}
-              Edit any value in the Schedule of Values, Job Cost Budget, or a Progress Report, then open the Dashboard:
-              the AI analysis recomputes live and surfaces new insights for the data you enter. Everything resets on refresh.
+              <span className="font-semibold text-foreground">These documents are the data behind the Dashboard.</span>{" "}
+              Most figures here are editable — change one, then open the Dashboard to watch the metrics and AI analysis
+              recompute live for your numbers. A few are locked to keep the record consistent: past-week progress reports
+              and the approved change order. It&apos;s a demo, so everything resets on refresh.
             </p>
           </div>
           {selected.kind === "html" ? (
@@ -169,7 +170,7 @@ export default function DocumentsPage() {
               />
             )
           ) : (
-            <TimecardEditor ticketId={selected.id} />
+            <TimecardEditor key={selected.id} ticketId={selected.id} />
           )}
         </div>
       </div>
@@ -205,6 +206,7 @@ const tcInput =
  * react. Also supports approve / reject and un-approve / un-reject. */
 function TimecardEditor({ ticketId }: { ticketId: string }) {
   const { tickets, updateRow, approve, reject, undo } = useStore();
+  const [editing, setEditing] = useState(false);
   const t = tickets.find((x) => x.id === ticketId);
   if (!t) return null;
   const changes = ticketChanges(t);
@@ -282,8 +284,27 @@ function TimecardEditor({ ticketId }: { ticketId: string }) {
           </div>
 
           <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-            <div className="border-b bg-muted/40 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Labor
+            <div className="flex items-center justify-between border-b bg-muted/40 px-4 py-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Labor</span>
+              <button
+                onClick={() => setEditing((e) => !e)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  editing
+                    ? "bg-accent text-white hover:bg-accent/90"
+                    : "border text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                {editing ? (
+                  <>
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Done
+                  </>
+                ) : (
+                  <>
+                    <PencilLine className="h-3.5 w-3.5" /> Edit hours &amp; rate
+                  </>
+                )}
+              </button>
             </div>
             <table className="w-full text-sm">
               <thead>
@@ -299,22 +320,31 @@ function TimecardEditor({ ticketId }: { ticketId: string }) {
                   <tr key={i} className="border-b last:border-0">
                     <td className="px-3 py-2">{r.className || "—"}</td>
                     <td className="px-3 py-2">{r.worker || "—"}</td>
-                    <td className="px-1.5 py-1.5">
-                      <input
-                        type="number"
-                        value={r.hours}
-                        onChange={(e) => updateRow(t.id, i, "hours", e.target.value)}
-                        className={cn(tcInput, "w-20 text-right")}
-                      />
-                    </td>
-                    <td className="px-1.5 py-1.5">
-                      <input
-                        type="number"
-                        value={r.rate}
-                        onChange={(e) => updateRow(t.id, i, "rate", e.target.value)}
-                        className={cn(tcInput, "w-24 text-right")}
-                      />
-                    </td>
+                    {editing ? (
+                      <>
+                        <td className="px-1.5 py-1.5">
+                          <input
+                            type="number"
+                            value={r.hours}
+                            onChange={(e) => updateRow(t.id, i, "hours", e.target.value)}
+                            className={cn(tcInput, "w-20 text-right")}
+                          />
+                        </td>
+                        <td className="px-1.5 py-1.5">
+                          <input
+                            type="number"
+                            value={r.rate}
+                            onChange={(e) => updateRow(t.id, i, "rate", e.target.value)}
+                            className={cn(tcInput, "w-24 text-right")}
+                          />
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-3 py-2 text-right tabular-nums">{r.hours || "—"}</td>
+                        <td className="px-3 py-2 text-right tabular-nums">{r.rate ? usd(r.rate) : "—"}</td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -395,6 +425,9 @@ function NumberCell({
 function EditableProgressReport({ week }: { week: number }) {
   const { progress, setProgressActual } = useStore();
   const weekEnding = weekEndings[String(week + 1)] ?? "";
+  // Only the current week (Week 3) is editable. Prior weeks are locked so the
+  // cumulative timeline stays consistent — a % complete can't move backwards.
+  const editable = week === 2;
   return (
     <div className="mx-auto max-w-3xl">
       <div className="rounded-xl border bg-card p-6 shadow-card">
@@ -403,8 +436,13 @@ function EditableProgressReport({ week }: { week: number }) {
             <h2 className="text-lg font-bold text-primary">Weekly Progress Report</h2>
             <p className="text-xs text-muted-foreground">Physical % complete by cost code</p>
           </div>
-          <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-medium text-accent">
-            Editable
+          <span
+            className={cn(
+              "rounded-full px-2.5 py-1 text-[11px] font-medium",
+              editable ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"
+            )}
+          >
+            {editable ? "Editable — current week" : "Locked — prior week"}
           </span>
         </div>
 
@@ -429,19 +467,27 @@ function EditableProgressReport({ week }: { week: number }) {
               const prog = progress[c.code];
               const actual = prog ? prog.actual[week] : 0;
               const planned = prog ? prog.planned[week] : 0;
+              const prior = prog && week > 0 ? prog.actual[week - 1] : 0;
               return (
                 <tr key={c.code} className="border-b last:border-0">
                   <td className="py-1.5 font-mono text-xs">{c.code}</td>
                   <td className="py-1.5">{c.description}</td>
                   <td className="py-1.5 text-right">
-                    <span className="inline-flex items-center gap-1">
-                      <NumberCell
-                        value={actual}
-                        onCommit={(n) => setProgressActual(c.code, week, n)}
-                        className="w-16 rounded border border-border px-2 py-1 text-right text-sm tabular-nums outline-none focus:ring-2 focus:ring-accent/40"
-                      />
-                      <span className="text-muted-foreground">%</span>
-                    </span>
+                    {editable ? (
+                      <span
+                        className="inline-flex items-center gap-1"
+                        title={`Can't be below last week's ${prior}%`}
+                      >
+                        <NumberCell
+                          value={actual}
+                          onCommit={(n) => setProgressActual(c.code, week, n)}
+                          className="w-16 rounded border border-border px-2 py-1 text-right text-sm tabular-nums outline-none focus:ring-2 focus:ring-accent/40"
+                        />
+                        <span className="text-muted-foreground">%</span>
+                      </span>
+                    ) : (
+                      <span className="tabular-nums">{actual}%</span>
+                    )}
                   </td>
                   <td className="py-1.5 text-right tabular-nums text-muted-foreground">{planned}%</td>
                 </tr>
@@ -451,8 +497,10 @@ function EditableProgressReport({ week }: { week: number }) {
         </table>
 
         <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <PencilLine className="h-3.5 w-3.5" /> Edit any % — the dashboard analysis updates live, and it
-          resets on refresh.
+          <PencilLine className="h-3.5 w-3.5" />
+          {editable
+            ? "Edit this week's % complete — the dashboard analysis updates live. Values can't drop below the prior week (a cumulative % can't go backwards). Resets on refresh."
+            : "Prior weeks are locked. Open the Week 3 report to edit the current progress."}
         </p>
       </div>
     </div>

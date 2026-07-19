@@ -32,7 +32,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <aside className="flex w-60 shrink-0 flex-col bg-primary text-white">
-        <div className="flex items-center gap-2.5 border-b border-white/10 px-5 py-4">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 border-b border-white/10 px-5 py-4 transition-colors hover:bg-white/5"
+        >
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent font-display text-sm font-bold text-white">
             N
           </div>
@@ -40,7 +43,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="font-display text-sm font-semibold tracking-tight text-white">Navillus PM</div>
             <div className="text-[11px] text-white/55">Project Health</div>
           </div>
-        </div>
+        </Link>
 
         {loaded && <ProjectSwitcher />}
 

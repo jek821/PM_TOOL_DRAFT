@@ -8,7 +8,7 @@ Built as a technical assessment for Navillus.
 
 | | |
 |---|---|
-| **Live demo** | `<VERCEL_URL>` |
+| **Live demo** | https://pm-tool-demo.vercel.app |
 | **Walkthrough video** | `<VIDEO_URL>` |
 | **Sign in** | username `pm_demo` · password `navillus` |
 

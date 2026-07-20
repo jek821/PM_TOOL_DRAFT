@@ -10,7 +10,6 @@ Built as a technical assessment for Navillus.
 |---|---|
 | **Live demo** | https://pm-tool-demo.vercel.app |
 | **Walkthrough video** | `<VIDEO_URL>` |
-| **Sign in** | username `pm_demo` · password `navillus` |
 
 > **Everything in this demo is synthetic.** Real contractor cost documents — populated schedules of
 > values, job cost budgets, certified payroll, timecards — are confidential and not publicly

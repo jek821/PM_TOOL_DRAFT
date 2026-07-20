@@ -1,6 +1,7 @@
 // STAGE 1 (live) — server-only vision extraction. Reads a photographed weekly
-// labor timecard, transcribes exactly what is written (NO correcting — the trap
-// tickets must survive so the deterministic validators can catch them), and
+// labor timecard, transcribes exactly what is written (NO correcting — a
+// wrong-project or impossible-hours ticket must survive so the deterministic
+// validators can catch it), and
 // assigns per-field confidence. Pay rates aren't on the physical card, so they
 // are filled from the roster by trade class after extraction.
 //

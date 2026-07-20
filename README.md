@@ -108,8 +108,8 @@ The parts that took the most thinking are in the data model, not the UI.
 - All data is synthetic and traces to one source file, `data/master-data.json`, which carries its own
   reconciliation block. The generated documents are views of it.
 - Cost codes follow modern 6-digit CSI MasterFormat. Labor rates are representative NYC
-  prevailing-wage-style figures. `Links.txt` cites the public templates each document format was
-  based on.
+  prevailing-wage-style figures. Each document format is modeled on public construction templates
+  (schedules of values, cost-loaded budgets, progress reports, and T&M field tickets).
 - State is in-memory and resets on refresh — there's no database. Fine for a demo, and the app says
   so where it matters.
 - One project carries full data; the project switcher shows the multi-project shape without
@@ -162,14 +162,11 @@ templates/    blank document templates the data was rendered into
 
 ## How this was built
 
-I worked from written specifications rather than ad-hoc prompting. `PLAN.md` holds the locked domain
-decisions and phase gates; `data/master-data.json` is a declared single source of truth that every
-generated document reconciles against. Claude Code was run against those documents phase by phase and
-re-grounded in them at each step, so the constraints stayed fixed as the build progressed.
-
-The guardrails are in the repo, not just in the prompts — which is why the dataset reconciles: 540
-hours logged across three tickets, 405 earned against a 1,500-hour budget line, 0.75 productivity,
-all traceable to one file.
+The project is built on a declared single source of truth: `data/master-data.json`. Every generated
+document — the schedule of values, the job cost budget, the progress reports, the change order — is a
+view of that file rather than a set of hand-placed values, which is what keeps the demo internally
+consistent. The dataset reconciles: 540 hours logged across three tickets, 405 earned against a
+1,500-hour budget line, 0.75 productivity, all traceable to one place.
 
 ---
 

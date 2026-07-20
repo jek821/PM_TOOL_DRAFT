@@ -9,7 +9,7 @@ Built as a technical assessment for Navillus.
 | | |
 |---|---|
 | **Live demo** | https://pm-tool-demo.vercel.app |
-| **Walkthrough video** | `<VIDEO_URL>` |
+| **Walkthrough video** | https://www.youtube.com/watch?v=Q6Wle_mCj8M |
 
 > **Everything in this demo is synthetic.** Real contractor cost documents — populated schedules of
 > values, job cost budgets, certified payroll, timecards — are confidential and not publicly

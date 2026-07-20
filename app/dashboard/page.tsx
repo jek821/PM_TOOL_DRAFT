@@ -15,7 +15,7 @@ import {
 import { useStore } from "@/lib/store";
 import { computeProjectContext, type CostCodeMetrics } from "@/lib/metrics";
 import { analyzeProject, getCachedAnalysis, type AnalysisResult, type Insight } from "@/lib/analyze";
-import { usd } from "@/lib/format";
+import { usd, num } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -30,6 +30,7 @@ import {
   FileText,
   Clock,
   Wallet,
+  Info,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -89,6 +90,8 @@ export default function DashboardPage() {
   const coDelta = context.revisedContract - context.originalContract;
   const totalCodes = context.byCostCode.length;
   const marginDelta = context.projectedMargin - context.plannedMargin; // <0 = eroded by labor
+  const spi = context.overallPlannedPct > 0 ? context.overallActualPct / context.overallPlannedPct : 1;
+  const totalCostBudget = context.revisedContract - context.plannedMargin; // Job Cost Budget total
   const weeksLate = context.projectedFinishWeek != null ? context.projectedFinishWeek - context.durationWeeks : null;
 
   return (
@@ -119,6 +122,13 @@ export default function DashboardPage() {
           label="Overall complete"
           value={`${actualPct}%`}
           tone="accent"
+          info={{
+            title: "Overall % complete",
+            formula:
+              "Each cost code's % complete, weighted by its share of the contract — so a $335k line moves this more than a $75k one.",
+            plugged: `Σ(scheduled value × % complete) ÷ ${usd(context.revisedContract)}\n= ${actualPct}% actual vs ${plannedPct}% planned`,
+            source: "Weekly Progress Reports (% complete) · Schedule of Values (weighting)",
+          }}
           sub={
             <>
               vs {plannedPct}% planned to date
@@ -136,6 +146,13 @@ export default function DashboardPage() {
           icon={Clock}
           label="Projected completion"
           value={context.projectedFinishWeek != null ? `Week ${context.projectedFinishWeek}` : "—"}
+          info={{
+            title: "Projected completion",
+            formula:
+              "Schedule Performance Index (SPI) = actual % ÷ planned %. Carrying the current pace across the full contract duration gives the finish week.",
+            plugged: `${actualPct}% ÷ ${plannedPct}% = ${spi.toFixed(2)} SPI\n${context.durationWeeks} wks ÷ ${spi.toFixed(2)} = Week ${context.projectedFinishWeek ?? "—"}`,
+            source: "Weekly Progress Reports · contract duration from the Schedule of Values",
+          }}
           tone={weeksLate == null ? "primary" : weeksLate > 0 ? "danger" : weeksLate < 0 ? "success" : "primary"}
           sub={
             weeksLate == null ? (
@@ -162,6 +179,13 @@ export default function DashboardPage() {
           icon={context.flagged.length ? AlertTriangle : CheckCircle2}
           label="Cost codes flagged"
           value={String(context.flagged.length)}
+          info={{
+            title: "Cost codes flagged",
+            formula:
+              "A line flags if it trails plan by more than 8 points, or productivity is under 0.85, or its projected labor overrun exceeds 10% of that line's labor budget. The same rules run on every line — nothing is hardcoded per trade.",
+            plugged: `${context.flagged.length} of ${totalCodes} lines flagged`,
+            source: "Weekly Progress Reports · approved Timecards · Job Cost Budget",
+          }}
           tone={context.flagged.length ? "warning" : "success"}
           sub={
             context.flagged.length
@@ -174,6 +198,13 @@ export default function DashboardPage() {
           label="Revised contract"
           value={usd(context.revisedContract)}
           tone="primary"
+          info={{
+            title: "Revised contract",
+            formula:
+              "The original contract total plus every approved change order. A change order never replaces the Schedule of Values — it revises it.",
+            plugged: `${usd(context.originalContract)} + ${usd(coDelta)} in change orders\n= ${usd(context.revisedContract)}`,
+            source: "Schedule of Values · approved Change Orders",
+          }}
           sub={
             coDelta !== 0 ? (
               <>
@@ -192,6 +223,13 @@ export default function DashboardPage() {
           icon={Wallet}
           label="Projected margin"
           value={usd(context.projectedMargin)}
+          info={{
+            title: "Projected margin",
+            formula:
+              "Revised contract minus the total cost budget gives planned margin; subtracting the projected labor variance gives where it actually lands. Materials are held at budget — there is no invoice data to vary them, so this moves on labor only.",
+            plugged: `${usd(context.revisedContract)} − ${usd(totalCostBudget)} = ${usd(context.plannedMargin)} planned\n− ${usd(context.netLaborVariance)} labor = ${usd(context.projectedMargin)}`,
+            source: "SOV + Change Orders · Job Cost Budget · approved Timecards",
+          }}
           tone={context.projectedMargin < 0 ? "danger" : marginDelta < -1 ? "warning" : "success"}
           sub={
             <>
@@ -214,6 +252,15 @@ export default function DashboardPage() {
           icon={netLabor > 1 ? TrendingUp : CheckCircle2}
           label="Projected labor"
           value={anyLabor ? usd(Math.abs(netLabor)) : "—"}
+          info={{
+            title: "Projected labor variance",
+            formula:
+              "For each line with timecards: estimate at completion = actual hours ÷ % complete, costed at the crew's blended rate, minus that line's labor budget. Summed across lines. Only lines with approved timecards contribute.",
+            plugged: anyLabor
+              ? `net ${usd(Math.abs(netLabor))} ${netLabor > 0 ? "over" : "under"} labor budget`
+              : "no approved timecards yet",
+            source: "approved Weekly Labor Tickets · Job Cost Budget · Weekly Progress Reports",
+          }}
           tone={netLabor > 1 ? "danger" : netLabor < -1 ? "success" : "primary"}
           sub={
             !anyLabor
@@ -307,14 +354,16 @@ const toneChip: Record<Tone, string> = {
   danger: "bg-danger/10 text-danger",
 };
 
-function Kpi({ icon: Icon, label, value, sub, tone }: { icon: React.ElementType; label: string; value: string; sub: React.ReactNode; tone: Tone }) {
+function Kpi({ icon: Icon, label, value, sub, tone, info }: { icon: React.ElementType; label: string; value: string; sub: React.ReactNode; tone: Tone; info?: MetricInfo }) {
   return (
     <Card>
       <CardContent className="p-4">
         <div className={cn("mb-2 inline-flex h-9 w-9 items-center justify-center rounded-lg", toneChip[tone])}>
           <Icon className="h-5 w-5" />
         </div>
-        <div className="text-xs text-muted-foreground">{label}</div>
+        <div className="text-xs text-muted-foreground">
+          {info ? <InfoTip info={info}>{label}</InfoTip> : label}
+        </div>
         <div className="font-display text-xl font-bold tracking-tight">{value}</div>
         <div className="text-[11px] leading-snug text-muted-foreground">{sub}</div>
       </CardContent>
@@ -328,7 +377,7 @@ function InsightCard({ insight, metric }: { insight: Insight; metric?: CostCodeM
   const [showRec, setShowRec] = useState(false);
   const chips: string[] = [];
   if (metric) {
-    if (metric.productivity != null) chips.push(`Productivity ${metric.productivity.toFixed(2)}`);
+    if (metric.productivity != null) chips.push(`Productivity ${metric.productivity.toFixed(2)} of 1.00`);
     if (metric.projectedLaborOverrun != null && metric.projectedLaborOverrun > 0) chips.push(`Proj. overrun ${usd(metric.projectedLaborOverrun)}`);
     if (metric.flags.includes("behind-schedule")) chips.push(`${metric.percentComplete}% vs ${metric.plannedPercent}% planned`);
   }
@@ -447,7 +496,117 @@ function ProgressBullet({ actual, planned, flagged }: { actual: number; planned:
   );
 }
 
+export interface MetricInfo {
+  title: string;
+  /** The formula in words — how this figure is derived. */
+  formula: string;
+  /** The same formula with this project's live values substituted in. */
+  plugged?: string;
+  /** Which uploaded document(s) each input came from. */
+  source: string;
+}
+
+/** Hover explainer for a figure: the exact formula, the live numbers plugged
+ * into it, and the source documents behind it. Every number on this dashboard
+ * is computed by lib/metrics.ts — these quote that math so a PM can trace any
+ * figure back to the paperwork rather than taking it on faith.
+ *
+ * Placement matters: the cost table sits in an `overflow-x-auto` container,
+ * and CSS forces overflow-y to `auto` when overflow-x isn't `visible` — so a
+ * tooltip that escapes the row box vertically gets clipped. "left" centres on
+ * the row, "leftUp" grows upward for the bottom rows, "bottom" is for the KPI
+ * cards (which have no clipping ancestor). */
+function InfoTip({
+  info,
+  placement = "bottom",
+  children,
+}: {
+  info: MetricInfo;
+  placement?: "bottom" | "bottomEnd" | "left" | "leftUp" | "leftDown";
+  children: React.ReactNode;
+}) {
+  const pos =
+    placement === "left"
+      ? "right-full top-1/2 mr-2 -translate-y-1/2"
+      : placement === "leftUp"
+      ? "right-full bottom-0 mr-2"
+      : placement === "leftDown"
+      ? "right-full top-0 mr-2"
+      : placement === "bottomEnd"
+      ? "right-0 top-full mt-1.5"
+      : "left-0 top-full mt-1.5";
+  return (
+    <span className="group relative inline-flex cursor-help items-center gap-1">
+      {children}
+      <Info className="h-3 w-3 shrink-0 text-muted-foreground/60" />
+      <span
+        className={cn(
+          "pointer-events-none absolute z-30 hidden w-64 rounded-lg bg-primary px-3 py-2.5 text-left text-xs font-normal normal-case leading-snug tracking-normal text-primary-foreground shadow-lg group-hover:block",
+          pos
+        )}
+      >
+        <span className="block font-semibold">{info.title}</span>
+        <span className="mt-1 block text-[11px] leading-relaxed text-primary-foreground/80">{info.formula}</span>
+        {info.plugged && (
+          <span className="mt-1.5 block whitespace-pre-line rounded bg-white/10 px-2 py-1 font-mono text-[11px] leading-relaxed">
+            {info.plugged}
+          </span>
+        )}
+        <span className="mt-1.5 block text-[11px] text-primary-foreground/70">
+          <span className="font-semibold uppercase tracking-wide">Source · </span>
+          {info.source}
+        </span>
+      </span>
+    </span>
+  );
+}
+
+const SCHEDULE_INFO: MetricInfo = {
+  title: "Schedule — actual vs planned",
+  formula:
+    "Physical % complete as assessed in the field, against the baseline schedule for the same week. A line flags as behind when it trails plan by more than 8 points.",
+  source: "Weekly Progress Report (actual %) · baseline schedule curve (planned %)",
+};
+
+const PRODUCTIVITY_INFO: MetricInfo = {
+  title: "Productivity factor",
+  formula:
+    "Earned hours ÷ actual hours, where earned = % complete × budgeted hours. 1.00 means the crew is exactly on the budgeted pace. Below 1.00 it is burning more hours than the finished work has earned back; 0.75 means it earns 45 minutes of budgeted work per hour worked. Flags below 0.85.",
+  source: "Job Cost Budget (budgeted hrs) · Weekly Progress Report (% complete) · approved Weekly Labor Tickets (actual hrs)",
+};
+
+const STATUS_INFO: MetricInfo = {
+  title: "Status",
+  formula:
+    "Red when the line carries at least one flag — behind schedule (>8 pts behind plan), low productivity (<0.85), or budget risk (projected labor overrun >10% of the line's labor budget). Green when none apply. Hover the dot to see which flags fired.",
+  source: "computed from the Progress Reports, Job Cost Budget, and approved Timecards",
+};
+
+const NO_PRODUCTIVITY_INFO: MetricInfo = {
+  title: "No productivity for this line",
+  formula:
+    "Productivity is earned hours ÷ actual hours, so it needs labor data. No timecards have been approved against this cost code, so the tool shows nothing rather than guessing. The schedule figures on this row are unaffected — those come from the progress report.",
+  source: "needs approved Weekly Labor Tickets",
+};
+
+function productivityInfo(m: CostCodeMetrics): MetricInfo {
+  if (m.productivity == null) return NO_PRODUCTIVITY_INFO;
+  const earned = Math.round(m.earnedHours ?? 0);
+  return {
+    ...PRODUCTIVITY_INFO,
+    plugged:
+      `${m.percentComplete}% × ${num(m.budgetHours)} budgeted hrs = ${num(earned)} earned hrs\n` +
+      `${num(earned)} ÷ ${num(m.actualHours)} actual hrs = ${m.productivity.toFixed(2)}`,
+  };
+}
+
 function CostTable({ rows }: { rows: CostCodeMetrics[] }) {
+  // The table sits in an `overflow-x-auto` container, and CSS forces overflow-y
+  // to `auto` alongside it — so a tooltip that escapes the container vertically
+  // is clipped. Rows in the top third grow downward, the bottom third upward,
+  // and the middle centres. Anchoring by zone rather than by a fixed row count
+  // keeps this correct as the tooltip's content (and height) changes.
+  const zone = Math.ceil(rows.length / 3);
   return (
     <Card>
       <CardContent className="p-0">
@@ -457,13 +616,21 @@ function CostTable({ rows }: { rows: CostCodeMetrics[] }) {
               <tr className="border-b font-display text-[11px] uppercase tracking-wide text-muted-foreground">
                 <th className="px-4 py-2.5 text-left font-medium">Cost Code</th>
                 <th className="px-4 py-2.5 text-left font-medium">Description</th>
-                <th className="px-4 py-2.5 text-left font-medium">Schedule (actual / planned)</th>
-                <th className="px-4 py-2.5 text-right font-medium">Productivity</th>
-                <th className="px-4 py-2.5 text-center font-medium">Status</th>
+                <th className="px-4 py-2.5 text-left font-medium">
+                  <InfoTip info={SCHEDULE_INFO}>Schedule (actual / planned)</InfoTip>
+                </th>
+                <th className="px-4 py-2.5 text-right font-medium">
+                  <InfoTip info={PRODUCTIVITY_INFO} placement="bottomEnd">
+                    Productivity <span className="normal-case">(1.00 = on budget)</span>
+                  </InfoTip>
+                </th>
+                <th className="px-4 py-2.5 text-center font-medium">
+                  <InfoTip info={STATUS_INFO} placement="bottomEnd">Status</InfoTip>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((m) => {
+              {rows.map((m, i) => {
                 const flagged = m.flags.length > 0;
                 return (
                   <tr key={m.code} className="border-b last:border-0">
@@ -476,11 +643,18 @@ function CostTable({ rows }: { rows: CostCodeMetrics[] }) {
                       </div>
                     </td>
                     <td className="px-4 py-2.5 text-right tabular-nums">
-                      {m.productivity != null ? (
-                        <span className={cn(m.productivity < 0.85 && "font-semibold text-danger")}>{m.productivity.toFixed(2)}</span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
+                      <InfoTip
+                        info={productivityInfo(m)}
+                        placement={i < zone ? "leftDown" : i >= rows.length - zone ? "leftUp" : "left"}
+                      >
+                        {m.productivity != null ? (
+                          <span className={cn(m.productivity < 0.85 && "font-semibold text-danger")}>
+                            {m.productivity.toFixed(2)}
+                          </span>
+                        ) : (
+                          <span className="border-b border-dashed border-muted-foreground/50 text-muted-foreground">—</span>
+                        )}
+                      </InfoTip>
                     </td>
                     <td className="px-4 py-2.5 text-center">
                       <span className={cn("inline-block h-2.5 w-2.5 rounded-full", flagged ? "bg-danger" : "bg-success")} title={flagged ? m.flags.join(", ") : "on track"} />
